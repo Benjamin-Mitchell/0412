@@ -22,7 +22,7 @@ public class Pathfinder : MonoBehaviour
     }
 
 
-    public static int gridSize = 500;
+    public static int gridSize = 10;
     public static float nodeSize = 1.0f;
     public static Vector3 centrePos = new Vector3(0.0f, 0.0f, 0.0f);
     private Vector3 gridBottomCorner;
@@ -172,8 +172,12 @@ public class Pathfinder : MonoBehaviour
         //inital population of lists.
         obstacles = new List<GameObject>(GameObject.FindGameObjectsWithTag("Obstacle"));
         agents = new List<GameObject>(GameObject.FindGameObjectsWithTag("Agent"));
+    }
 
 
+    // Start is called before the first frame update
+    void Start()
+    {
         gridBottomCorner = centrePos - (new Vector3(gridSize / 2.0f, gridSize / 2.0f, gridSize / 2.0f) * nodeSize);
 
         //initiate grid
@@ -181,12 +185,6 @@ public class Pathfinder : MonoBehaviour
 
         //populate grid with inital objects.
         UpdateGridWithObstacles();
-    }
-
-
-    // Start is called before the first frame update
-    void Start()
-    {
     }
 
     // Update is called once per frame
@@ -203,9 +201,13 @@ public class Pathfinder : MonoBehaviour
             {
                 for (int z = 0; z < gridSize; z++)
                 {
+
+                    grid[x, y, z] = new Node();
                     // positions
-                    if (grid[x, y, z].pos.x > 10.0f)
+                    if (grid[x, y, z] == null)
                         Debug.Log("cool");
+
+
 
                     grid[x, y, z].pos.x = gridBottomCorner.x + (x * nodeSize);
                     grid[x, y, z].pos.y = gridBottomCorner.y + (y * nodeSize);
@@ -281,7 +283,7 @@ public class Pathfinder : MonoBehaviour
         int nodeX = (int)(nodePos.x / nodeSize);
         int nodeY = (int)(nodePos.y / nodeSize);
         int nodeZ = (int)(nodePos.z / nodeSize);
-
+        Debug.Log(nodeX + nodeY + nodeZ);
         return grid[nodeX, nodeY, nodeZ];
     }
 }

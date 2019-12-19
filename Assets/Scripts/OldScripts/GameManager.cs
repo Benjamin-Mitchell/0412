@@ -78,11 +78,9 @@ public class GameManager : MonoBehaviour {
             {
                 if (interactables[i].spotsAvailable[k])
                 {
-                    //Debug.Log("interactable " + i + " spot " + k + " is free!");
                     agents[agentID].assignTarget(interactables[i], interactables[i].freeSpots[k], k);
                     interactables[i].spotsAvailable[k] = false;
-
-                   // Debug.Log("making interactable " + i + " spot " + k + " taken!");
+                    
                     return true;
                 }
             }

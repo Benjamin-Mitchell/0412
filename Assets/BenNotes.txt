@@ -1,0 +1,7 @@
+CURRENT CODING PROBLEMS:
+
+- Pathfind:
+	- currently doesn't take into account agent's size - assumes one node.
+	- test obstacle system
+	- need to dynamically update grid with dynamic object positions.
+	

@@ -44,15 +44,21 @@ public class Pathfinder : MonoBehaviour
         List<Node> nodePath = FindPath(fromNode, toNode);
 
         List<Vector3> vector3Path = new List<Vector3>();
-        for(int i = 0; i < nodePath.Count; i++)
+
+        //invert path and convert to Vector3
+        // i > 0 as we don't want to add last one, see below comment
+        for(int i = nodePath.Count - 1; i > 0; i--)
         {
             vector3Path.Add(nodePath[i].pos);
         }
 
+        //last one should be exact position, not node position.
+        vector3Path.Add(to);
+
         return vector3Path;
     }
 
-
+    //TODO: Check for duplicate additions to the path (this should never happen)
     List<Node> FindPath(Node from, Node to)
     {
         List<Node> open = new List<Node>();
@@ -147,7 +153,7 @@ public class Pathfinder : MonoBehaviour
 
                     // don't add off-screen nodes
                     if (newNodeX < 0 || newNodeY < 0 || newNodeZ < 0
-                            || newNodeX > gridSize || newNodeY > gridSize || newNodeZ > gridSize)
+                            || newNodeX >= gridSize || newNodeY >= gridSize || newNodeZ >= gridSize)
                         continue;
 
                     // don't add occupied nodes
@@ -185,6 +191,9 @@ public class Pathfinder : MonoBehaviour
 
         //populate grid with inital objects.
         UpdateGridWithObstacles();
+
+        //JUST FOR TESTING
+        //drawGrid();
     }
 
     // Update is called once per frame
@@ -245,26 +254,30 @@ public class Pathfinder : MonoBehaviour
             Vector3 nodeTopCorner = colTopCorner - new Vector3(colTopCorner.x % nodeSize, colTopCorner.y % nodeSize, colTopCorner.z % nodeSize);
 
             //TEST: nodeBotCorner = 6.6 - 0.6 = 6.0
-           
-            int botNodeX = (int)(nodeBotCorner.x / nodeSize);
-            int botNodeY = (int)(nodeBotCorner.y / nodeSize);
-            int botNodeZ = (int)(nodeBotCorner.z / nodeSize);
+            int offset = gridSize / 2;
+            int botNodeX = offset +  (int)(nodeBotCorner.x / nodeSize);
+            int botNodeY = offset +  (int)(nodeBotCorner.y / nodeSize);
+            int botNodeZ = offset +  (int)(nodeBotCorner.z / nodeSize);
 
-            int TopNodeX = (int)(nodeTopCorner.x / nodeSize);
-            int TopNodeY = (int)(nodeTopCorner.y / nodeSize);
-            int TopNodeZ = (int)(nodeTopCorner.z / nodeSize);
+            int TopNodeX = offset +  (int)(nodeTopCorner.x / nodeSize);
+            int TopNodeY = offset +  (int)(nodeTopCorner.y / nodeSize);
+            int TopNodeZ = offset + (int)(nodeTopCorner.z / nodeSize);
 
             //TEST: nodeX = (int)6.0 / 1.0f = 6
             //Node bottomNode = grid[nodeX, nodeY, nodeZ];
 
+            Debug.Log("bot Node: " + new Vector3(botNodeX, botNodeY, botNodeZ));
+            Debug.Log("top Node: " + new Vector3(TopNodeX, TopNodeY, TopNodeZ));
+
             // Now need to cover all boxes covered by that (currently only correct function on boxColliders)
-            for(int x = botNodeX; x < TopNodeX; x++)
+            for(int x = botNodeX; x <= TopNodeX; x++)
             {
-                for (int y = botNodeY; y < TopNodeY; y++)
+                for (int y = botNodeY; y <= TopNodeY; y++)
                 {
-                    for (int z = botNodeZ; z < TopNodeZ; z++)
+                    for (int z = botNodeZ; z <= TopNodeZ; z++)
                     {
                         grid[x, y, z].occupied = true;
+                        Debug.Log("grid " + x + "," + y + "," + z + " occupied");
                     }
                 }
             }
@@ -277,13 +290,75 @@ public class Pathfinder : MonoBehaviour
     }
 
     // helper function for accessing nodes using Vector3 positions.
+    //TODO: test this returns correct value
     Node ReturnNodeFromVector3(Vector3 vec)
     {
         Vector3 nodePos = vec - new Vector3(vec.x % nodeSize, vec.y % nodeSize, vec.z % nodeSize);
-        int nodeX = (int)(nodePos.x / nodeSize);
-        int nodeY = (int)(nodePos.y / nodeSize);
-        int nodeZ = (int)(nodePos.z / nodeSize);
-        Debug.Log(nodeX + nodeY + nodeZ);
+
+        //offset for half being negative
+        int offset = gridSize / 2;
+
+        int nodeX = offset + (int)(nodePos.x / nodeSize);
+        int nodeY = offset + (int)(nodePos.y / nodeSize);
+        int nodeZ = offset + (int)(nodePos.z / nodeSize);
+
         return grid[nodeX, nodeY, nodeZ];
+    }
+
+    //JUST FOR TESTING
+    void drawGrid()
+    {
+        MeshFilter filter = gameObject.GetComponent<MeshFilter>();
+        var mesh = new Mesh();
+        var verticies = new List<Vector3>();
+
+        var indicies = new List<int>();
+        int i = 0;
+        for (int x = 0; x < gridSize; x++)
+        {
+            for (int y = 0; y < gridSize; y++)
+            {
+                for (int z = 0; z < gridSize; z++)
+                {
+                    verticies.Add(new Vector3(x, y, z));
+                    verticies.Add(new Vector3(x + 1, y, z));
+                    verticies.Add(new Vector3(x, y + 1, z));
+                    verticies.Add(new Vector3(x + 1, y + 1, z));
+
+                    indicies.Add(i);
+                }
+            }
+        }
+
+        //            for (int i = 0; i < gridSize; i++)
+        //{
+        //    verticies.Add(new Vector3(i, 0, 0));
+        //    verticies.Add(new Vector3(i, i, gridSize));
+        //
+        //    indicies.Add(6 * i + 0);
+        //    indicies.Add(6 * i + 1);
+        //
+        //    verticies.Add(new Vector3(0, i, 0));
+        //    verticies.Add(new Vector3(i, gridSize, i));
+        //
+        //    indicies.Add(6 * i + 2);
+        //    indicies.Add(6 * i + 3);
+        //
+        //    verticies.Add(new Vector3(0, 0, i));
+        //    verticies.Add(new Vector3(gridSize, i, i));
+        //
+        //    indicies.Add(6 * i + 4);
+        //    indicies.Add(6 * i + 5);
+        //
+        //    
+        //}
+
+        mesh.vertices = verticies.ToArray();
+        mesh.SetIndices(indicies.ToArray(), MeshTopology.Lines, 0);
+        filter.mesh = mesh;
+
+        MeshRenderer meshRenderer = gameObject.GetComponent<MeshRenderer>();
+        meshRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        meshRenderer.material.color = Color.white;
     }
 }

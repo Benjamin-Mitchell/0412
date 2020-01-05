@@ -8,6 +8,12 @@ public class A_Agent : MonoBehaviour
     Pathfinder pathFinder;
 
     public float moveSpeed = 1.0f;
+
+    //TEST
+    Vector3 target1 = new Vector3(3, 1, 1);
+    Vector3 target2 = new Vector3(-1, 1, 1);
+    bool targetswitch = false;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -17,24 +23,38 @@ public class A_Agent : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(path.Count);
+
+        
         if(path.Count < 1)
         {
             float x = Random.Range(Pathfinder.centrePos.x - (Pathfinder.gridSize / 2.0f), Pathfinder.centrePos.x + (Pathfinder.gridSize / 2.0f));
             float y = Random.Range(Pathfinder.centrePos.y - (Pathfinder.gridSize / 2.0f), Pathfinder.centrePos.y + (Pathfinder.gridSize / 2.0f));
             float z = Random.Range(Pathfinder.centrePos.z - (Pathfinder.gridSize / 2.0f), Pathfinder.centrePos.z + (Pathfinder.gridSize / 2.0f));
-
+            
             Vector3 target = new Vector3(x, y, z);
-            pathFinder.requestPath(transform.position, target);
+
+            //Vector3 target = targetswitch ? target1 : target2;
+            //
+            //targetswitch = !targetswitch;
+            //Debug.Log("TARGET: " + target);
+
+            path = pathFinder.requestPath(transform.position, target);
+
+            //for(int i = 0; i < path.Count; i++)
+            //{
+            //    Debug.Log("Path " + i + ": " + path[i]);
+            //}
         }
         else
         {
-            transform.position = Vector3.MoveTowards(transform.position, path[path.Count], moveSpeed * Time.deltaTime);
-
-            if(Vector3.Distance(transform.position, path[path.Count]) < 0.1f)
+            transform.position = Vector3.MoveTowards(transform.position, path[path.Count - 1], moveSpeed * Time.deltaTime);
+            
+            if(Vector3.Distance(transform.position, path[path.Count - 1]) < 0.1f)
             {
-                path.RemoveAt(path.Count);
+                path.RemoveAt(path.Count - 1);
             }
         }
+
+
     }
 }

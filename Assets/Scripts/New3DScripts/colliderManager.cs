@@ -13,16 +13,17 @@ public class colliderManager : MonoBehaviour
 
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
-        // TODO: Can we make this a single GetComponent call?
-        if (GetComponent<BoxCollider>() != null)
+        BoxCollider boxCol;
+        if ((boxCol = GetComponent<BoxCollider>()) != null)
         {
             size = GetComponent<BoxCollider>().size;
             return;
         }
 
-        if (GetComponent<SphereCollider>() != null)
+        SphereCollider sphereCol;
+        if ((sphereCol = GetComponent<SphereCollider>()) != null)
         {
             float radius = GetComponent<SphereCollider>().radius;
             size = new Vector3(radius/2.0f, radius / 2.0f, radius / 2.0f);

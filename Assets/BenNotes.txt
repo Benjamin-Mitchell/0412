@@ -4,4 +4,4 @@ CURRENT CODING PROBLEMS:
 	- currently doesn't take into account agent's size - assumes one node.
 	- test obstacle system
 	- need to dynamically update grid with dynamic object positions.
-	
+	- deal with not being able to find the path

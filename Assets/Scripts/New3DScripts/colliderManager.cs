@@ -18,14 +18,14 @@ public class colliderManager : MonoBehaviour
         BoxCollider boxCol;
         if ((boxCol = GetComponent<BoxCollider>()) != null)
         {
-            size = GetComponent<BoxCollider>().size;
+            size = Vector3.Scale(transform.localScale, boxCol.size);
             return;
         }
 
         SphereCollider sphereCol;
         if ((sphereCol = GetComponent<SphereCollider>()) != null)
         {
-            float radius = GetComponent<SphereCollider>().radius;
+            float radius = sphereCol.radius;
             size = new Vector3(radius/2.0f, radius / 2.0f, radius / 2.0f);
             return;
         }

@@ -26,8 +26,6 @@ public class A_Agent : MonoBehaviour
 
         if(path.Count == 0)
         {
-            Debug.Log("CURRENT LOCATION: " + transform.position);
-
             float x = Random.Range(pathFinder.gridBottomCorner.x, pathFinder.gridBottomCorner.x + Pathfinder.gridSize);
             float y = Random.Range(pathFinder.gridBottomCorner.y, pathFinder.gridBottomCorner.y + Pathfinder.gridSize);
             float z = Random.Range(pathFinder.gridBottomCorner.z, pathFinder.gridBottomCorner.z + Pathfinder.gridSize);
@@ -37,7 +35,6 @@ public class A_Agent : MonoBehaviour
             //Vector3 target = targetswitch ? target1 : target2;
             
             //targetswitch = !targetswitch;
-            Debug.Log("TARGET: " + target);
 
             path = pathFinder.requestPath(transform.position, target);
 
@@ -46,13 +43,6 @@ public class A_Agent : MonoBehaviour
             {
                 path = new List<Vector3>();
                 return;
-            }
-
-            Debug.Log("PATH LENGTH: " + path.Count);
-
-            for(int i = 0; i < path.Count; i++)
-            {
-               Debug.Log("Path " + i + ": " + path[i]);
             }
         }
         else

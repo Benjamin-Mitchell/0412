@@ -113,17 +113,8 @@ public class Pathfinder : MonoBehaviour
             current = open[0];
             open.Remove(current);
             visited.Add(current);
-            //Debug.Log("NODE BEING ADDED TO VISITED: " + new Vector3(current.intVec3.x, current.intVec3.y, current.intVec3.z));
 
             List<Node> neighbours = GetValidNeighbours(current);
-
-            //if(failSafe == 100)
-            //{
-            //    for(int i = 0; i < visited.Count; i++)
-            //    {
-            //        Debug.Log("NODE IN VISITED: " + new Vector3(visited[i].x, visited[i].y, visited[i].z));
-            //    }
-            //}
 
             for(int i = 0; i < neighbours.Count; i++)
             {

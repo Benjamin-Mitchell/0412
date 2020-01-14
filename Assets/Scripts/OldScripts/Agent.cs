@@ -6,7 +6,7 @@ public class Agent : MonoBehaviour
 {
     private UnityEngine.AI.NavMeshAgent agent;
     private GameManager gameManager;
-    private Interactable target;
+    private OldInteractable target;
     private float interactionTimeRemaining;
     private int spotTaken = 0;
 
@@ -70,7 +70,7 @@ public class Agent : MonoBehaviour
                 if (interactionTimeRemaining <= 0.0f)
                 {
                     state = State.WAITING;
-                    Interactable oldTarget = target;
+                    OldInteractable oldTarget = target;
                     int oldSpot = spotTaken;
                     points += target.pointWorth;
                     gameManager.notifyTaskCompletion(ID /*, target.pointWorth*/);
@@ -86,7 +86,7 @@ public class Agent : MonoBehaviour
         }
 	}
 
-    public void assignTarget(Interactable interactable, Vector3 freeSpot, int spotTaken)
+    public void assignTarget(OldInteractable interactable, Vector3 freeSpot, int spotTaken)
     {
         this.spotTaken = spotTaken;
         target = interactable;

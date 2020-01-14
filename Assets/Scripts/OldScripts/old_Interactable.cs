@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Interactable : MonoBehaviour {
+public class OldInteractable : MonoBehaviour {
 
     public Vector3[] freeSpots = new Vector3[4];
 

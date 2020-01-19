@@ -9,13 +9,8 @@ public class A_Agent : MonoBehaviour
 
     public float moveSpeed = 1.0f;
 
-    //TEST
-    Vector3 target1 = new Vector3(2.5f, 2, 5);
-    Vector3 target2 = new Vector3(2.5f, 2, 0);
-    bool targetswitch = false;
-
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
         pathFinder = GameObject.FindGameObjectWithTag("PathFinder").GetComponent<Pathfinder>();
     }
@@ -23,38 +18,25 @@ public class A_Agent : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
-        if(path.Count == 0)
-        {
-            float x = Random.Range(pathFinder.gridBottomCorner.x, pathFinder.gridBottomCorner.x + Pathfinder.gridSize);
-            float y = Random.Range(pathFinder.gridBottomCorner.y, pathFinder.gridBottomCorner.y + Pathfinder.gridSize);
-            float z = Random.Range(pathFinder.gridBottomCorner.z, pathFinder.gridBottomCorner.z + Pathfinder.gridSize);
-            
-            Vector3 target = new Vector3(x, y, z);
-
-            //Vector3 target = targetswitch ? target1 : target2;
-            
-            //targetswitch = !targetswitch;
-
-            path = pathFinder.requestPath(transform.position, target);
-
-            //null path = couldnt reach destination
-            if (path == null)
-            {
-                path = new List<Vector3>();
-                return;
-            }
-        }
-        else
+        if(path.Count != 0)
         {
             transform.position = Vector3.MoveTowards(transform.position, path[0], moveSpeed * Time.deltaTime);
             
-            if(Vector3.Distance(transform.position, path[0]) < 0.1f)
+            if(Vector3.Distance(transform.position, path[0]) < 0.05f)
             {
                 path.RemoveAt(0);
             }
         }
+    }
 
+    public void setPath(Vector3 target)
+    {
+        path = pathFinder.requestPath(transform.position, target);
 
+        if (path == null)
+        {
+            path = new List<Vector3>();
+            return;
+        }
     }
 }

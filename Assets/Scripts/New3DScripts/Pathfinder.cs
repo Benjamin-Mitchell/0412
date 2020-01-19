@@ -34,15 +34,15 @@ public class Pathfinder : MonoBehaviour
     }
 
 
-    public static int gridSize = 10;
+    //public static int gridSize = 10;
     public static float nodeSize = 1.0f;
     public static Vector3 centrePos = new Vector3(0.0f, 0.0f, 0.0f);
     public Vector3 gridBottomCorner;
 
     List<GameObject> obstacles;
     List<GameObject> agents;
-    
-    Node[,,] grid = new Node[gridSize, gridSize, gridSize];
+
+    Node[,,] grid;
 
     /// <summary>
     /// A_Star bits
@@ -74,8 +74,7 @@ public class Pathfinder : MonoBehaviour
 
         return vector3Path;
     }
-
-    //TODO: Check for duplicate additions to the path (this should never happen)
+    
     List<Node> FindPath(Node from, Node to)
     {
         List<Node> open = new List<Node>();
@@ -84,8 +83,6 @@ public class Pathfinder : MonoBehaviour
 
         current = from;
         open.Add(current);
-        //open.Clear();
-        //open.AddRange(grid);
 
         foreach(Node node in grid)
         {
@@ -158,8 +155,7 @@ public class Pathfinder : MonoBehaviour
     List<Node> GetValidNeighbours(Node node)
     {
         List<Node> neighbours = new List<Node>();
-
-        int i = 0;
+        
         for (int x = -1; x < 2; x++)
         {
             for (int y = -1; y < 2; y++)
@@ -176,7 +172,7 @@ public class Pathfinder : MonoBehaviour
 
                     // don't add off-screen nodes
                     if (newNodeX < 0 || newNodeY < 0 || newNodeZ < 0
-                            || newNodeX >= gridSize || newNodeY >= gridSize || newNodeZ >= gridSize)
+                            || newNodeX >= GameManager.Instance.mapX || newNodeY >= GameManager.Instance.mapY || newNodeZ >= GameManager.Instance.mapZ)
                         continue;
 
                     // don't add occupied nodes
@@ -196,17 +192,14 @@ public class Pathfinder : MonoBehaviour
 
     void Awake()
     {
+        grid = new Node[GameManager.Instance.mapX, GameManager.Instance.mapY, GameManager.Instance.mapZ];
+
         transform.position = centrePos;
 
         //inital population of lists.
         obstacles = new List<GameObject>(GameObject.FindGameObjectsWithTag("Obstacle"));
         agents = new List<GameObject>(GameObject.FindGameObjectsWithTag("Agent"));
-    }
 
-
-    // Start is called before the first frame update
-    void Start()
-    {
         //gridBottomCorner = centrePos - (new Vector3(gridSize / 2.0f, gridSize / 2.0f, gridSize / 2.0f) * nodeSize);
         gridBottomCorner = Vector3.zero;
 
@@ -215,6 +208,13 @@ public class Pathfinder : MonoBehaviour
 
         //populate grid with inital objects.
         UpdateGridWithObstacles();
+    }
+
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        
 
         //JUST FOR TESTING
         //drawGrid();
@@ -228,11 +228,11 @@ public class Pathfinder : MonoBehaviour
 
     void InitiateGrid()
     {
-        for(int x = 0; x < gridSize; x++)
+        for(int x = 0; x < GameManager.Instance.mapX; x++)
         {
-            for (int y = 0; y < gridSize; y++)
+            for (int y = 0; y < GameManager.Instance.mapY; y++)
             {
-                for (int z = 0; z < gridSize; z++)
+                for (int z = 0; z < GameManager.Instance.mapZ; z++)
                 {
 
                     grid[x, y, z] = new Node();
@@ -336,12 +336,11 @@ public class Pathfinder : MonoBehaviour
         var verticies = new List<Vector3>();
 
         var indicies = new List<int>();
-        int i = 0;
-        for (int x = 0; x < gridSize; x++)
+        for (int x = 0; x < GameManager.Instance.mapX; x++)
         {
-            for (int y = 0; y < gridSize; y++)
+            for (int y = 0; y < GameManager.Instance.mapY; y++)
             {
-                for (int z = 0; z < gridSize; z++)
+                for (int z = 0; z < GameManager.Instance.mapZ; z++)
                 {                    
                     if (grid[x, y, z].occupied)
                     {

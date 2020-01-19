@@ -17,14 +17,17 @@ public class Base : MonoBehaviour
     {
         baseStages[stage].SetActive(true);
         agent = Instantiate(agentPrefab, transform.position + transform.forward, Quaternion.identity).GetComponent<AgentGameplay>();
+
+        //move agent some arbitrary amount forward.
+        agent.moveTo(transform.position + (transform.forward * 4));
     }
 
     // Update is called once per frame
     void Update()
     {
-        value += Time.deltaTime;
+        //value += Time.deltaTime;
 
-        if(value > 3.0f && stage < 5)
+        if(value > 3.0f && stage < 4)
             SwitchBase();
     }
 

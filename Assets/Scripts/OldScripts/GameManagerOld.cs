@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour {
+public class GameManagerOld : MonoBehaviour {
 
     //private int points;
     //public int Points

@@ -7,7 +7,11 @@ public class AgentGameplay : MonoBehaviour
     public GameObject[] agentStages = new GameObject[5];
     public Base associatedBase;
 
+
     int currentStage = 0;
+
+    [SerializeField]
+    private A_Agent agentPathfinding;
 
     // Start is called before the first frame update
     void Start()
@@ -29,5 +33,11 @@ public class AgentGameplay : MonoBehaviour
         agentStages[currentStage].SetActive(false);
         currentStage = stage;
         agentStages[currentStage].SetActive(true);
+    }
+
+    
+    public void moveTo(Vector3 target)
+    {
+        agentPathfinding.setPath(target);
     }
 }

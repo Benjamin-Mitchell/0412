@@ -5,3 +5,4 @@ CURRENT CODING PROBLEMS:
 	- test obstacle system
 	- need to dynamically update grid with dynamic object positions.
 	- deal with not being able to find the path
+	- looks odd when it tries to go in a straight line but has to go via node centres...

@@ -5,12 +5,11 @@ using UnityEngine;
 public class Agent : MonoBehaviour
 {
     private UnityEngine.AI.NavMeshAgent agent;
-    private GameManager gameManager;
+    private GameManagerOld gameManager;
     private OldInteractable target;
     private float interactionTimeRemaining;
     private int spotTaken = 0;
-
-    private int debugNumber = 0;
+    
     enum State
     {
         WAITING,
@@ -36,7 +35,7 @@ public class Agent : MonoBehaviour
     void Awake () {
         points = 0;
         agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
-        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>();
+        gameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManagerOld>();
 	}
 
     void Start()

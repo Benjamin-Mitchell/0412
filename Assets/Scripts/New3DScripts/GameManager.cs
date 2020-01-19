@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager3D : MonoBehaviour
+public class GameManager : Singleton<GameManager>
 {
-
+    public int mapX = 20;
+    public int mapY = 20;
+    public int mapZ = 20;
 
     // Start is called before the first frame update
     void Start()

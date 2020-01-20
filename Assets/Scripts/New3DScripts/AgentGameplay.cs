@@ -32,7 +32,17 @@ public class AgentGameplay : MonoBehaviour
     //how much value am I currently carrying
     private float carryingValue;
 
-    private float actionTime = .0f;   
+    private float actionTime = .0f;
+
+
+
+    /// Idle Rotation variables
+    private Vector3 centre;
+    private float radius;
+    private Vector3 axis;
+    private float orbitRotationSpeed = 10.0f;
+    private float radiusCorrectionSpeed = 0.5f;
+    private Vector3 previousPos;
 
 
 
@@ -99,7 +109,16 @@ public class AgentGameplay : MonoBehaviour
 
                 //chill out
 
+                //Movement
+                transform.RotateAround(associatedBase.gameObject.transform.position, axis, orbitRoationSpeed * Time.deltaTime);
+                Vector3 orbitDesiredPosition = (transform.position - associatedBase.gameObject.transform.position).normalized * radius + associatedBase.gameObject.transform.position;
+                transform.position = Vector3.Slerp(transform.position, orbitDesiredPosition, Time.deltaTime * radiusCorrectionSpeed);
 
+                //Rotation
+                Vector3 relativePos = transform.position - previousPos;
+                Quaternion rotation = Quaternion.LookRotation(relativePos);
+                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, radiusCorrectionSpeed * Time.deltaTime);
+                previousPos = transform.position;
 
 
                 break;

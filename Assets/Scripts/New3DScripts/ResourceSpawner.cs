@@ -12,6 +12,10 @@ public class ResourceSpawner : MonoBehaviour
     //prefab for Resource
     public List<GameObject> resources = new List<GameObject>();
 
+    public List<Base> bases = new List<Bases>();
+
+    int baseTicker = 0;
+
     float spawnTimer = .0f;
     float nextSpawnTime = .0f;
 
@@ -52,6 +56,18 @@ public class ResourceSpawner : MonoBehaviour
             (float)GameManager.Instance.mapZ);
 
         //don't currently track the resource
-        Instantiate(resources[Random.Range(0, resources.Count)], spawnPos, Quaternion.identity);
+        Resource r = Instantiate(resources[Random.Range(0, resources.Count)], spawnPos, Quaternion.identity);
+
+        //rotationally grant resources
+        bases[baseTicker].grantResource(r);
+        baseTicker++;
+
+        if (baseTicker >= bases.Count)
+            baseTicker = 0;
+    }
+
+    public void addBaseToListing(Base b)
+    {
+        bases.Add(b);
     }
 }

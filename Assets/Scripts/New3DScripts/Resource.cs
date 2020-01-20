@@ -6,7 +6,6 @@ public class Resource : MonoBehaviour
 {
     public float value;
     public float moveSpeed = 0.5f;
-    public bool assignedToAgent = false;
 
     Vector3 target;
     // Start is called before the first frame update

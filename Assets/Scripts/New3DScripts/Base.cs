@@ -17,13 +17,18 @@ public class Base : MonoBehaviour
     //TODO: make this a list and update functionality for multiple agents.
     private List<AgentGameplay> agents = new List<AgentGameplay>();
 
-
     private List<Resource> resourcesInScene = new List<Resource>();
 
 
     // Start is called before the first frame update
     void Start()
     {
+        //add this base to resourceSpawner
+        ResourceSpawner spawner = GameObject.FindGameObjectWithTag("ResourceSpawner");
+
+        spawner.addBaseToListing(this);
+
+
         baseStages[stage].SetActive(true);
 
         AgentGameplay agent = Instantiate(agentPrefab, transform.position + transform.forward, Quaternion.identity).GetComponent<AgentGameplay>();
@@ -41,13 +46,15 @@ public class Base : MonoBehaviour
         if(timer > 3.0f && stage < 4)
             SwitchBase();
 
-        //TODO: Find more efficient way of doing this
         UpdateAgents();
     }
 
     void UpdateAgents()
     {
-        resourcesInScene = GameObject.FindGameObjectsWithTag("Resource");
+        if (resourcesInScene.Count < 1)
+            return;
+
+
         for (int i = 0; i < agents.Count;i++)
         {
             if(agents[i].state == State::Idle)
@@ -57,12 +64,18 @@ public class Base : MonoBehaviour
                 {
                     if(!resourcesInScene[j].assignedToAgent)
                     {
-                        resourcesInScene[j].assignedToAgent = true;
                         agents[i].setResourceTarget(resourcesInScene[j]);
+                        resourcesInScene.Remove(j);
+                        break;
                     }
                 }
             }
         }
+    }
+
+    public void grantResource(Resource r)
+    {
+        resourcesInScene.Add(r);
     }
 
     void SwitchBase()

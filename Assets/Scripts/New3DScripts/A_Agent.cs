@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+//TODO: change this name to AgentPathfinding
 public class A_Agent : MonoBehaviour
 {
     List<Vector3> path = new List<Vector3>();
@@ -31,6 +32,8 @@ public class A_Agent : MonoBehaviour
 
     public void setPath(Vector3 target)
     {
+
+        //TODO: do I need to clear memory here?
         path = pathFinder.requestPath(transform.position, target);
 
         if (path == null)

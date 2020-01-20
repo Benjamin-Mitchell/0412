@@ -4,14 +4,20 @@ using UnityEngine;
 
 public class Resource : MonoBehaviour
 {
-
-    public float moveSpeed = 1.0f;
+    public float value;
+    public float moveSpeed = 0.5f;
+    public bool assignedToAgent = false;
 
     Vector3 target;
     // Start is called before the first frame update
     void Start()
     {
         target = new Vector3(transform.position.x, transform.position.y, -1.0f);
+
+        //add some slight variation to the value - not sure if this is useful..
+        float minValue = value - ((10.0f / 100.0f) * value);
+        float maxValue = value + ((10.0f / 100.0f) * value);
+        value = Random.Range(minValue, maxValue);
     }
 
     // Update is called once per frame

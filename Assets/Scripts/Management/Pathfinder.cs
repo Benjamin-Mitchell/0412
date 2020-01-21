@@ -40,7 +40,6 @@ public class Pathfinder : MonoBehaviour
     public Vector3 gridBottomCorner;
 
     List<GameObject> obstacles;
-    List<GameObject> agents;
 
     Node[,,] grid;
 
@@ -52,6 +51,20 @@ public class Pathfinder : MonoBehaviour
     public List<Vector3> requestPath(Vector3 from, Vector3 to)
     {
         Node fromNode = ReturnNodeFromVector3(from);
+
+        int X = GameManager.Instance.mapX;
+        int Y = GameManager.Instance.mapY;
+        int Z = GameManager.Instance.mapZ;
+
+
+        if (to.x > X || to.x < .0f
+            || to.y > Y || to.y < .0f
+            || to.z > Z || to.z < .0f)
+        {
+            Debug.Log("Demanded an out of range vector destination!");
+            return null;
+        }
+
         Node toNode = ReturnNodeFromVector3(to);
 
 
@@ -188,8 +201,6 @@ public class Pathfinder : MonoBehaviour
     }
 
 
-
-
     void Awake()
     {
         grid = new Node[GameManager.Instance.mapX, GameManager.Instance.mapY, GameManager.Instance.mapZ];
@@ -198,7 +209,6 @@ public class Pathfinder : MonoBehaviour
 
         //inital population of lists.
         obstacles = new List<GameObject>(GameObject.FindGameObjectsWithTag("Obstacle"));
-        agents = new List<GameObject>(GameObject.FindGameObjectsWithTag("Agent"));
 
         //gridBottomCorner = centrePos - (new Vector3(gridSize / 2.0f, gridSize / 2.0f, gridSize / 2.0f) * nodeSize);
         gridBottomCorner = Vector3.zero;
@@ -316,11 +326,12 @@ public class Pathfinder : MonoBehaviour
     }
 
     // helper function for accessing nodes using Vector3 positions.
-    //TODO: test this returns correct value
+    // MAX VALUE CANNOT EQUAL OR EXCEED MAP SIZE
     Node ReturnNodeFromVector3(Vector3 vec)
     {
         Vector3 nodePos = vec - new Vector3(vec.x % nodeSize, vec.y % nodeSize, vec.z % nodeSize);
 
+        // -1 for offset into 0 indexed array.
         int nodeX = (int)(nodePos.x / nodeSize);
         int nodeY = (int)(nodePos.y / nodeSize);
         int nodeZ = (int)(nodePos.z / nodeSize);

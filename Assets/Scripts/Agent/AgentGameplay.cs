@@ -8,9 +8,9 @@ public class AgentGameplay : MonoBehaviour
     public Base associatedBase;
 
     //How often should the path information be reset (in seconds)
-    public float pathUpdateStep = 0.25f;
+    public float pathUpdateStep = 1.0f;
 
-    enum State
+    public enum State
     {
         UnderOrders,
         ChasingResource,
@@ -18,7 +18,7 @@ public class AgentGameplay : MonoBehaviour
         Idle
     };
 
-    private State state = State::Idle;
+    private State state = State.Idle;
 
     int currentStage = 0;
 
@@ -61,11 +61,18 @@ public class AgentGameplay : MonoBehaviour
     void UpdateState()
     {
         actionTime += Time.deltaTime;
+
         switch(state)
         {
-            case State::UnderOrders:
+            case State.UnderOrders:
+                if (Vector3.Distance(transform.position, moveToTarget) < 0.1f)
+                {
+                    state = State.Idle;
+                }
+
                 break;
-            case State::ChasingResource:
+            case State.ChasingResource:
+                
                 //continue to update position to follow target
                 if (actionTime > pathUpdateStep)
                 {
@@ -80,13 +87,13 @@ public class AgentGameplay : MonoBehaviour
                     carryingValue = resourceTarget.value;
 
                     Destroy(resourceTarget.gameObject);
-                    state = State::ReturningResources;
+                    state = State.ReturningResource;
                     actionTime = .0f;
                 }
 
 
                 break;
-            case State::ReturningResource:
+            case State.ReturningResource:
 
                 //TODO: can I do this less often on return trip?
                 if (actionTime > pathUpdateStep)
@@ -100,30 +107,35 @@ public class AgentGameplay : MonoBehaviour
                 {
                     associatedBase.addResources(carryingValue);
                     carryingValue = .0f;
-                    state = State::Idle;
+                    state = State.Idle;
                     actionTime = .0f;
                 }
 
                 break;
-            case State::Idle:
+            case State.Idle:
 
                 //chill out
 
                 //Movement
-                transform.RotateAround(associatedBase.gameObject.transform.position, axis, orbitRoationSpeed * Time.deltaTime);
-                Vector3 orbitDesiredPosition = (transform.position - associatedBase.gameObject.transform.position).normalized * radius + associatedBase.gameObject.transform.position;
-                transform.position = Vector3.Slerp(transform.position, orbitDesiredPosition, Time.deltaTime * radiusCorrectionSpeed);
-
-                //Rotation
-                Vector3 relativePos = transform.position - previousPos;
-                Quaternion rotation = Quaternion.LookRotation(relativePos);
-                transform.rotation = Quaternion.Slerp(transform.rotation, rotation, radiusCorrectionSpeed * Time.deltaTime);
-                previousPos = transform.position;
+                //transform.RotateAround(associatedBase.gameObject.transform.position, axis, orbitRotationSpeed * Time.deltaTime);
+                //Vector3 orbitDesiredPosition = (transform.position - associatedBase.gameObject.transform.position).normalized * radius + associatedBase.gameObject.transform.position;
+                //transform.position = Vector3.Slerp(transform.position, orbitDesiredPosition, Time.deltaTime * radiusCorrectionSpeed);
+                //
+                ////Rotation
+                //Vector3 relativePos = transform.position - previousPos;
+                //Quaternion rotation = Quaternion.LookRotation(relativePos);
+                //transform.rotation = Quaternion.Slerp(transform.rotation, rotation, radiusCorrectionSpeed * Time.deltaTime);
+                //previousPos = transform.position;
 
 
                 break;
 
         }
+    }
+
+    public State getState()
+    {
+        return state;
     }
 
     public void setBase(Base b)
@@ -147,14 +159,17 @@ public class AgentGameplay : MonoBehaviour
 
     public void setResourceTarget(Resource resource)
     {
+        actionTime = .0f;
         resourceTarget = resource;
-        moveTo = resourceTarget.gameObject.transform.position;
-        state = State::ChasingResource;
+        moveToTarget = resourceTarget.gameObject.transform.position;
+        agentPathfinding.setPath(moveToTarget);
+        state = State.ChasingResource;
     }
 
     public void moveTo(Vector3 target)
     {
         moveToTarget = target;
         agentPathfinding.setPath(target);
+        state = State.UnderOrders;
     }
 }

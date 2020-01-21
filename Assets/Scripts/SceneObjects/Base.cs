@@ -24,7 +24,7 @@ public class Base : MonoBehaviour
     void Start()
     {
         //add this base to resourceSpawner
-        ResourceSpawner spawner = GameObject.FindGameObjectWithTag("ResourceSpawner");
+        ResourceSpawner spawner = GameObject.FindGameObjectWithTag("ResourceSpawner").GetComponent<ResourceSpawner>();
 
         spawner.addBaseToListing(this);
 
@@ -54,21 +54,15 @@ public class Base : MonoBehaviour
         if (resourcesInScene.Count < 1)
             return;
 
-
+        
         for (int i = 0; i < agents.Count;i++)
         {
-            if(agents[i].state == State::Idle)
+            if(agents[i].getState() == AgentGameplay.State.Idle && resourcesInScene[0].transform.position.z < GameManager.Instance.mapZ)
             {
-                //find free resource and assign
-                for (int j = 0; j < resourcesInScene.Count; j++)
-                {
-                    if(!resourcesInScene[j].assignedToAgent)
-                    {
-                        agents[i].setResourceTarget(resourcesInScene[j]);
-                        resourcesInScene.Remove(j);
-                        break;
-                    }
-                }
+                //assign free resource and assign
+                 agents[i].setResourceTarget(resourcesInScene[0]);
+                 resourcesInScene.RemoveAt(0);
+                 break;
             }
         }
     }
@@ -84,13 +78,13 @@ public class Base : MonoBehaviour
         stage++;
 
         for (int i = 0; i < agents.Count; i++)
-            agent.setStage(stage);
+            agents[i].setStage(stage);
 
         baseStages[stage].SetActive(true);
         timer = 0.0f;
     }
 
-    public void addResources(int val)
+    public void addResources(float val)
     {
         heldResource += val;
     }

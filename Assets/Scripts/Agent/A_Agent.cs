@@ -32,8 +32,8 @@ public class A_Agent : MonoBehaviour
 
     public void setPath(Vector3 target)
     {
+        path.Clear();
 
-        //TODO: do I need to clear memory here?
         path = pathFinder.requestPath(transform.position, target);
 
         if (path == null)

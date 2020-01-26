@@ -8,11 +8,11 @@ public class AgentGameplay : MonoBehaviour
     public Base associatedBase;
 
     //How often should the path information be reset (in seconds)
-    public float pathUpdateStep = 1.0f;
+    public float pathUpdateStep;
 
     public enum State
     {
-        UnderOrders,
+        UnderSpawnOrders,
         ChasingResource,
         ReturningResource,
         Idle
@@ -25,8 +25,9 @@ public class AgentGameplay : MonoBehaviour
     [SerializeField]
     private A_Agent agentPathfinding;
 
-    private Vector3 moveToTarget;
+    private Resource moveToTarget;
     private Vector3 returnTarget;
+    private Vector3 spawnTarget;
 
     private Resource resourceTarget;
     //how much value am I currently carrying
@@ -64,36 +65,75 @@ public class AgentGameplay : MonoBehaviour
 
         switch(state)
         {
-            case State.UnderOrders:
-                if (Vector3.Distance(transform.position, moveToTarget) < 0.1f)
+            case State.UnderSpawnOrders:
+                if (Vector3.Distance(transform.position, spawnTarget) < 0.1f)
                 {
+                    agentPathfinding.nullifyPath();
                     state = State.Idle;
                 }
 
                 break;
             case State.ChasingResource:
+
+                //TODO: check if resource is still present, or pick one that is guaranteed to still be in range.
                 
-                //continue to update position to follow target
-                if (actionTime > pathUpdateStep)
-                {
-                    actionTime = .0f;
-                    agentPathfinding.setPath(moveToTarget);
-                }
 
                 // TODO: need to modify distance to resource beforce collecting it
-                if(Vector3.Distance(transform.position, moveToTarget) < 0.3f)
+                if (Vector3.Distance(transform.position, moveToTarget.transform.position) < 0.3f)
                 {
                     // Get Resource
                     carryingValue = resourceTarget.value;
-
+                
                     Destroy(resourceTarget.gameObject);
                     state = State.ReturningResource;
                     actionTime = .0f;
                 }
+                
+                
+                //do a ray-cast first, this is more optimal if possible.
+                RaycastHit hit;
+                if(Physics.Raycast(transform.position, moveToTarget.transform.position - transform.position, out hit))
+                {
+                    // target is in direct vision
+                    if (hit.collider.gameObject == moveToTarget.gameObject)
+                    {
+                        actionTime = pathUpdateStep;
+                        agentPathfinding.setSingleNodePath(moveToTarget.transform.position);
+                        break;
+                    }
+                    
+                }
+                
 
+                //continue to update position to follow target
+                if (actionTime >= pathUpdateStep)
+                {
+                    actionTime = .0f;
+                    agentPathfinding.setPath(moveToTarget.transform.position);
+                    
+                }
+
+                
 
                 break;
             case State.ReturningResource:
+
+                if (Vector3.Distance(transform.position, returnTarget) < 0.05f)
+                {
+                    associatedBase.addResources(carryingValue);
+                    carryingValue = .0f;
+                    state = State.Idle;
+                    actionTime = .0f;
+                }
+
+                // if the ray hits nothing, it's a clear path
+                if (!Physics.Raycast(transform.position, returnTarget - transform.position, Vector3.Distance(returnTarget, transform.position)))
+                {
+                    actionTime = pathUpdateStep;
+                    agentPathfinding.setSingleNodePath(returnTarget);
+                    break;
+                }
+
 
                 //TODO: can I do this less often on return trip?
                 if (actionTime > pathUpdateStep)
@@ -103,17 +143,11 @@ public class AgentGameplay : MonoBehaviour
                 }
 
 
-                if (Vector3.Distance(transform.position, moveToTarget) < 0.05f)
-                {
-                    associatedBase.addResources(carryingValue);
-                    carryingValue = .0f;
-                    state = State.Idle;
-                    actionTime = .0f;
-                }
+                
 
                 break;
             case State.Idle:
-
+                
                 //chill out
 
                 //Movement
@@ -159,17 +193,19 @@ public class AgentGameplay : MonoBehaviour
 
     public void setResourceTarget(Resource resource)
     {
-        actionTime = .0f;
+        // make sure a movement check is done immediately;
+        actionTime = pathUpdateStep;
+
+
         resourceTarget = resource;
-        moveToTarget = resourceTarget.gameObject.transform.position;
-        agentPathfinding.setPath(moveToTarget);
+        moveToTarget = resourceTarget;
         state = State.ChasingResource;
     }
 
     public void moveTo(Vector3 target)
     {
-        moveToTarget = target;
+        spawnTarget = target;
         agentPathfinding.setPath(target);
-        state = State.UnderOrders;
+        state = State.UnderSpawnOrders;
     }
 }

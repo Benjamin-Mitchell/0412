@@ -97,25 +97,24 @@ public class Pathfinder : MonoBehaviour
     
     List<Node> FindPath(Node from, Node to)
     {
-        Debug.Log("Starting to time");
-        float timeatstart = Time.realtimeSinceStartup;
+        /////////////float timeatstart = Time.realtimeSinceStartup;
         List<Node> open = new List<Node>();
         Node current;
 
         current = from;
         open.Add(current);
-
-        float clearNodeTime = Time.realtimeSinceStartup;
-        foreach(Node node in grid)
+        
+        //performant
+        foreach (Node node in grid)
         {
             node.clear();
         }
-        Debug.Log("clearing node list took: " + (Time.realtimeSinceStartup - clearNodeTime));
 
 
-        float visitedContainsCheckTime = 0.0f;
-        float openContainsCheckTime = 0.0f;
-        float openAddCheckTime = 0.0f;
+        /////////////float visitedContainsCheckTime = 0.0f;
+        /////////////float openContainsCheckTime = 0.0f;
+        /////////////float openAddCheckTime = 0.0f;
+        /////////////float createNeighboursTime = 0.0f;
 
 
         while (open.Count > 0)
@@ -130,13 +129,14 @@ public class Pathfinder : MonoBehaviour
                     returnNodes.Add(current);
                     current = current.parent;
                 }
-                
-                Debug.Log("checking visited list took: " + (visitedContainsCheckTime));
-                Debug.Log("checking open contains list took: " + (openContainsCheckTime));
-                Debug.Log("adding node to Open took: " + (openAddCheckTime));
 
-                float timeatend = Time.realtimeSinceStartup;
-                Debug.Log("Pathfinding took: " + (timeatend - timeatstart));
+                /////////////Debug.Log("checking visited list took: " + (visitedContainsCheckTime));
+                /////////////Debug.Log("checking open contains list took: " + (openContainsCheckTime));
+                /////////////Debug.Log("adding node to Open took: " + (openAddCheckTime));
+                /////////////Debug.Log("Neighbours list took: " + (createNeighboursTime));
+
+                //float timeatend = Time.realtimeSinceStartup;
+                //Debug.Log("Pathfinding took: " + (timeatend - timeatstart));
                 return returnNodes;
             }
 
@@ -144,42 +144,81 @@ public class Pathfinder : MonoBehaviour
             open.Remove(current);
             current.open = false;
             current.visited = true;
-            
-            List<Node> neighbours = GetValidNeighbours(current);
-           
-            for (int i = 0; i < neighbours.Count; i++)
+
+           //float g = Time.realtimeSinceStartup;
+           //List<Node> neighbours = GetValidNeighbours(current);
+           //createNeighboursTime += Time.realtimeSinceStartup - g;
+
+            // check neighbours
+            for (int x = -1; x < 2; x++)
             {
-                float a = Time.realtimeSinceStartup;
-                // skip if aleady ruled out.
-                if (neighbours[i].visited)
-                    continue;
-                visitedContainsCheckTime += Time.realtimeSinceStartup - a;
-
-
-                float g = neighbours[i].g + nodeSize;
-                float h = manhattanHeuristic(neighbours[i], to);
-                float f = g + h;
-
-                float b = Time.realtimeSinceStartup;
-                bool inOpen = neighbours[i].open;
-                openContainsCheckTime += Time.realtimeSinceStartup - b;
-
-                float c = Time.realtimeSinceStartup;
-                if(!inOpen || (inOpen && (neighbours[i].f > f)))
+                for (int y = -1; y < 2; y++)
                 {
-                    if (!inOpen)
+                    for (int z = -1; z < 2; z++)
                     {
-                        neighbours[i].open = true;
-                        open.Add(neighbours[i]);
+                        
+                        Node neighbour = null;
+                        float j = Time.realtimeSinceStartup;
+                        // check its a valid neighbour
+                        {
+
+                            // skip current node
+                            if (x == 0 && y == 0 && z == 0)
+                                continue;
+
+                            //neighbour position
+                            int newNodeX = current.intVec3.x + x;
+                            int newNodeY = current.intVec3.y + y;
+                            int newNodeZ = current.intVec3.z + z;
+
+                            // don't add off-screen nodes
+                            if (newNodeX < 0 || newNodeY < 0 || newNodeZ < 0 ||
+                                    newNodeX >= GameManager.Instance.mapX ||
+                                    newNodeY >= GameManager.Instance.mapY ||
+                                    newNodeZ >= GameManager.Instance.mapZ)
+                                continue;
+
+                            // don't add occupied nodes
+                            if (grid[newNodeX, newNodeY, newNodeZ].occupied)
+                                continue;
+
+                            neighbour = grid[newNodeX, newNodeY, newNodeZ];
+                        }
+                        /////////////createNeighboursTime += Time.realtimeSinceStartup - j;
+
+                        float a = Time.realtimeSinceStartup;
+                        // skip if aleady ruled out.
+                        if (neighbour.visited)
+                            continue;
+                        /////////////visitedContainsCheckTime += Time.realtimeSinceStartup - a;
+
+
+                        float g = neighbour.g + nodeSize;
+                        float h = manhattanHeuristic(neighbour, to);
+                        float f = g + h;
+
+                        float b = Time.realtimeSinceStartup;
+                        bool inOpen = neighbour.open;
+                        ///////////// openContainsCheckTime += Time.realtimeSinceStartup - b;
+
+                        float c = Time.realtimeSinceStartup;
+                        if (!inOpen || (inOpen && (neighbour.f > f)))
+                        {
+                            if (!inOpen)
+                            {
+                                neighbour.open = true;
+                                open.Add(neighbour);
+                            }
+
+                            neighbour.f = f;
+                            neighbour.g = g;
+                            neighbour.h = h;
+                            neighbour.parent = current;
+                        }
+                        /////////////openAddCheckTime += Time.realtimeSinceStartup - c;
+
                     }
-
-                    neighbours[i].f = f;
-                    neighbours[i].g = g;
-                    neighbours[i].h = h;
-                    neighbours[i].parent = current;
                 }
-                openAddCheckTime += Time.realtimeSinceStartup - c;
-
             }
         }
 

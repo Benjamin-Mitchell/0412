@@ -32,7 +32,8 @@ public class A_Agent : MonoBehaviour
 
     public void setPath(Vector3 target)
     {
-        path.Clear();
+        Debug.Log("pathfinding");
+        nullifyPath();
 
         path = pathFinder.requestPath(transform.position, target);
 
@@ -41,5 +42,18 @@ public class A_Agent : MonoBehaviour
             path = new List<Vector3>();
             return;
         }
+    }
+
+    public void setSingleNodePath(Vector3 target)
+    {
+        nullifyPath();
+        path.Add(target);
+
+    }
+
+    public void nullifyPath()
+    {
+        if(path.Count != 0)
+            path.Clear();
     }
 }

@@ -23,6 +23,11 @@ public class Pathfinder : MonoBehaviour
 
         public Vector3 pos;
         public bool occupied;
+
+        // booleans replace open and closed lists, as checking lists was too underperformant.
+        public bool open;
+        public bool visited;
+
         public float f, g, h;
         public Node parent;
 
@@ -30,6 +35,8 @@ public class Pathfinder : MonoBehaviour
         {
             f = g = h = 0;
             parent = null;
+            open = false;
+            visited = false;
         }
     }
 
@@ -90,69 +97,90 @@ public class Pathfinder : MonoBehaviour
     
     List<Node> FindPath(Node from, Node to)
     {
+        Debug.Log("Starting to time");
+        float timeatstart = Time.realtimeSinceStartup;
         List<Node> open = new List<Node>();
-        List<Node> visited = new List<Node>(); ;
         Node current;
 
         current = from;
         open.Add(current);
 
+        float clearNodeTime = Time.realtimeSinceStartup;
         foreach(Node node in grid)
         {
             node.clear();
         }
+        Debug.Log("clearing node list took: " + (Time.realtimeSinceStartup - clearNodeTime));
 
-        int failSafe = 0;
-        while(open.Count > 0 && failSafe < 10000)
+
+        float visitedContainsCheckTime = 0.0f;
+        float openContainsCheckTime = 0.0f;
+        float openAddCheckTime = 0.0f;
+
+
+        while (open.Count > 0)
         {
             current.f = current.g = current.h = 0;
             if (current.intVec3.Equals(to.intVec3))
             {
                 List<Node> returnNodes = new List<Node>();
                 // check this
-                while (current.parent != null && failSafe < 10000)
+                while (current.parent != null)
                 {
                     returnNodes.Add(current);
                     current = current.parent;
-                    failSafe++;
                 }
+                
+                Debug.Log("checking visited list took: " + (visitedContainsCheckTime));
+                Debug.Log("checking open contains list took: " + (openContainsCheckTime));
+                Debug.Log("adding node to Open took: " + (openAddCheckTime));
 
+                float timeatend = Time.realtimeSinceStartup;
+                Debug.Log("Pathfinding took: " + (timeatend - timeatstart));
                 return returnNodes;
             }
 
             current = open[0];
             open.Remove(current);
-            visited.Add(current);
-
+            current.open = false;
+            current.visited = true;
+            
             List<Node> neighbours = GetValidNeighbours(current);
-
-            for(int i = 0; i < neighbours.Count; i++)
+           
+            for (int i = 0; i < neighbours.Count; i++)
             {
+                float a = Time.realtimeSinceStartup;
                 // skip if aleady ruled out.
-                if (visited.Contains(neighbours[i]))
+                if (neighbours[i].visited)
                     continue;
+                visitedContainsCheckTime += Time.realtimeSinceStartup - a;
+
 
                 float g = neighbours[i].g + nodeSize;
                 float h = manhattanHeuristic(neighbours[i], to);
                 float f = g + h;
 
-                bool inOpen = open.Contains(neighbours[i]);
+                float b = Time.realtimeSinceStartup;
+                bool inOpen = neighbours[i].open;
+                openContainsCheckTime += Time.realtimeSinceStartup - b;
 
+                float c = Time.realtimeSinceStartup;
                 if(!inOpen || (inOpen && (neighbours[i].f > f)))
                 {
                     if (!inOpen)
+                    {
+                        neighbours[i].open = true;
                         open.Add(neighbours[i]);
+                    }
 
                     neighbours[i].f = f;
                     neighbours[i].g = g;
                     neighbours[i].h = h;
                     neighbours[i].parent = current;
                 }
-                
+                openAddCheckTime += Time.realtimeSinceStartup - c;
 
             }
-
-            failSafe++;
         }
 
 

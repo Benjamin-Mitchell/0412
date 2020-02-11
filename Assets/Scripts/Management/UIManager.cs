@@ -15,7 +15,6 @@ public class UIManager : MonoBehaviour
     Text resourceText;
 
 
-
     float baseResource = 0;
     float baseReqToUpdate = 0;
     bool fullyUpgraded = false;

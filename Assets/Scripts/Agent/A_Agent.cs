@@ -22,7 +22,8 @@ public class A_Agent : MonoBehaviour
         if(path.Count != 0)
         {
             transform.position = Vector3.MoveTowards(transform.position, path[0], moveSpeed * Time.deltaTime);
-            
+            transform.LookAt(path[0]);
+
             if(Vector3.Distance(transform.position, path[0]) < 0.05f)
             {
                 path.RemoveAt(0);
@@ -32,7 +33,6 @@ public class A_Agent : MonoBehaviour
 
     public void setPath(Vector3 target)
     {
-        Debug.Log("pathfinding");
         nullifyPath();
 
         path = pathFinder.requestPath(transform.position, target);

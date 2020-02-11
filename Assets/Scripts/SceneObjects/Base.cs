@@ -1,28 +1,31 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Base : MonoBehaviour
 {
     public GameObject[] baseStages = new GameObject[5];
     public GameObject agentPrefab;
 
-    public float heldResource = .0f;
-
-    //Delete once replaced with upgrades
-    public float timer = 0.0f;
+    public int heldResource = 0;
+    public int reqToUpgrade = 0;
     
     private int stage = 0;
-
+    
     //TODO: make this a list and update functionality for multiple agents.
     private List<AgentGameplay> agents = new List<AgentGameplay>();
 
     private List<Resource> resourcesInScene = new List<Resource>();
 
+    [SerializeField]
+    private Text resourceText;
+
 
     // Start is called before the first frame update
     void Start()
     {
+
         //add this base to resourceSpawner
         ResourceSpawner spawner = GameObject.FindGameObjectWithTag("ResourceSpawner").GetComponent<ResourceSpawner>();
 
@@ -36,17 +39,23 @@ public class Base : MonoBehaviour
         //move agent some arbitrary amount forward.
         agent.moveTo(transform.position + (transform.forward * 4.0f));
         agents.Add(agent);
+
+        reqToUpgrade = requiredToUpgrade();
     }
 
     // Update is called once per frame
     void Update()
     {
-        //value += Time.deltaTime;
-
-        if(timer > 3.0f && stage < 4)
-            SwitchBase();
-
         UpdateAgents();
+
+        resourceText.text = heldResource.ToString();
+
+
+        //DEBUG ONLY
+        if(Input.GetKeyDown(KeyCode.G))
+        {
+            heldResource += 100;
+        }
     }
 
     void UpdateAgents()
@@ -72,8 +81,11 @@ public class Base : MonoBehaviour
         resourcesInScene.Add(r);
     }
 
-    void SwitchBase()
+    public void UpgradeBase()
     {
+        if (IsFullyUpgraded())
+            return;
+        heldResource -= reqToUpgrade;
         baseStages[stage].SetActive(false);
         stage++;
 
@@ -81,11 +93,29 @@ public class Base : MonoBehaviour
             agents[i].setStage(stage);
 
         baseStages[stage].SetActive(true);
-        timer = 0.0f;
+        reqToUpgrade = requiredToUpgrade();
     }
 
-    public void addResources(float val)
+    public bool IsFullyUpgraded()
+    {
+        bool val = stage < 4 ? false : true;
+        return val;
+    }
+
+    public void addResources(int val)
     {
         heldResource += val;
+    }
+
+
+    public int baseVal = 50;
+    public int multiplePerUpgrade = 1;
+    //multiple is done before power
+    public int powerPerUpgrade = 2; 
+
+    public int requiredToUpgrade()
+    {
+        int stageVal = stage + 1;
+        return ((baseVal * multiplePerUpgrade) * stageVal) ^ stageVal ^ powerPerUpgrade;
     }
 }

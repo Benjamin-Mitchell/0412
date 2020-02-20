@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour {
+public class GameManagerOld : MonoBehaviour {
 
     //private int points;
     //public int Points
@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour {
     //}
 
     //dynamic list of agent-interactable objects.
-    public List<Interactable> interactables;
+    public List<OldInteractable> interactables;
     public List<Agent> agents;
     public List<int> freeAgents;
 
@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour {
 
         foreach (GameObject interactable in interactableObjects)
         {
-            interactables.Add(interactable.GetComponent<Interactable>());
+            interactables.Add(interactable.GetComponent<OldInteractable>());
         }
 
         AssignAgentIDs();

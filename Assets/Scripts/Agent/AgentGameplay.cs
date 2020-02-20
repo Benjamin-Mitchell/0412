@@ -120,7 +120,7 @@ public class AgentGameplay : MonoBehaviour
 
                 if (Vector3.Distance(transform.position, returnTarget) < 0.05f)
                 {
-                    associatedBase.addResources(carryingValue);
+                    associatedBase.addResources((int)carryingValue);
                     carryingValue = .0f;
                     state = State.Idle;
                     actionTime = .0f;

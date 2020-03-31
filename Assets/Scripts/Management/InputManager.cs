@@ -14,7 +14,7 @@ public class InputManager : MonoBehaviour
     private Vector2 previousPos;
     private Vector3 camLookAt;
     //
-    float distance = 15.0f;
+    float distance;
     float rotationYAxis = 0.0f;
     float rotationXAxis = 0.0f;
     public float yMinLimit = -90f;
@@ -24,10 +24,12 @@ public class InputManager : MonoBehaviour
     void Start()
     {
         camLookAt = new Vector3(GameManager.Instance.mapX/2.0f,GameManager.Instance.mapY/2.0f,GameManager.Instance.mapZ/2.0f);
+        distance = Vector3.Distance(cam.transform.position, camLookAt);
         cam.transform.LookAt(camLookAt);
         Vector3 angles = cam.transform.eulerAngles;
         rotationYAxis = angles.y;
         rotationXAxis = angles.x;
+
     }
 
     // Update is called once per frame

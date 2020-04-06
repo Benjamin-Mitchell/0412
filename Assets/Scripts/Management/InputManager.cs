@@ -69,7 +69,8 @@ public class InputManager : MonoBehaviour
                 {
                     if (hit.collider.CompareTag("Base"))
                     {
-                        _UIManager.EnableUI(hit.collider.gameObject.GetComponent<Base>());
+                        if(_UIManager)
+                            _UIManager.EnableUI(hit.collider.gameObject.GetComponent<Base>());
                         traversing = true;
                         camLookAt = hit.collider.gameObject.transform.position;
                         CalcTraversalTarget();

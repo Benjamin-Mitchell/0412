@@ -88,7 +88,7 @@ public class InputManager : MonoBehaviour
 
             //camera zoom control
 #if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
-            distance -= Input.GetAxis("Mouse ScrollWheel");
+            distance -= Input.GetAxis("Mouse ScrollWheel") * 3.0f;
             distance = Mathf.Clamp(distance, minDistance, maxDistance);
 #elif (UNITY_ANDROID || UNITY_IOS)
             if(Input.touchCount == 2)

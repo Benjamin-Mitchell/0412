@@ -13,19 +13,22 @@ public class Base : MonoBehaviour
     
     private int stage = 0;
     
-    //TODO: make this a list and update functionality for multiple agents.
     private List<AgentGameplay> agents = new List<AgentGameplay>();
 
+    //TODO: this should probably be held globally somewhere instead of updated for each base.
     private List<Resource> resourcesInScene = new List<Resource>();
 
     [SerializeField]
     private Text resourceText;
 
+    public string baseType;
+
 
     // Start is called before the first frame update
     void Start()
     {
-
+        baseType = gameObject.name.Contains("Clone") ? gameObject.name.Substring(5, gameObject.name.Length - 5 - 7) : gameObject.name.Substring(5);
+        agentPrefab = (GameObject)Resources.Load("Agent_" + baseType, typeof(GameObject));
         //add this base to resourceSpawner
         ResourceSpawner spawner = GameObject.FindGameObjectWithTag("ResourceSpawner").GetComponent<ResourceSpawner>();
 

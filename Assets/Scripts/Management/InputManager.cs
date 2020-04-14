@@ -8,6 +8,9 @@ public class InputManager : MonoBehaviour
     UIManager _UIManager;
 
     [SerializeField]
+    BuildManager buildManager;
+
+    [SerializeField]
     GameObject cam;
     //
     private bool dragging;
@@ -56,7 +59,7 @@ public class InputManager : MonoBehaviour
 
             //object tap control
 #if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
-            if (Input.GetMouseButtonDown(0)/*Input.GetMouseButtonUp(0)*/)
+            if (Input.GetMouseButtonDown(0) && !buildManager.building)
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 #elif (UNITY_ANDROID || UNITY_IOS)
@@ -69,7 +72,7 @@ public class InputManager : MonoBehaviour
                 {
                     if (hit.collider.CompareTag("Base"))
                     {
-                        if(_UIManager)
+                        if (_UIManager)
                             _UIManager.EnableUI(hit.collider.gameObject.GetComponent<Base>());
                         traversing = true;
                         camLookAt = hit.collider.gameObject.transform.position;

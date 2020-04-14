@@ -9,11 +9,16 @@ public class UIManager : MonoBehaviour
     GameObject UI_object;
 
     [SerializeField]
+    GameObject backArrow;
+
+    [SerializeField]
     Image resourceImage;
 
     [SerializeField]
     Text resourceText;
 
+    [SerializeField]
+    BuildManager buildManager;
 
     float baseResource = 0;
     float baseReqToUpdate = 0;
@@ -23,7 +28,7 @@ public class UIManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
@@ -55,8 +60,6 @@ public class UIManager : MonoBehaviour
         resourceImage.color = new Color(r, g, 0.0f, a);
 
         resourceImage.transform.localScale = new Vector3(g, g, g);
-
-        
     }
 
     //For now you can only select bases
@@ -89,4 +92,22 @@ public class UIManager : MonoBehaviour
             fullyUpgraded = baseRef.IsFullyUpgraded();
         }
     }
+
+    public void BuildProcess()
+    {
+        // disable UI (except return arrow).
+        UI_object.SetActive(false);
+        backArrow.SetActive(true);
+
+        buildManager.BeginBuild(baseRef.transform.position, baseRef.baseType);
+    }
+
+    public void DefaultState()
+    {
+        backArrow.SetActive(false);
+        UI_object.SetActive(true);
+        buildManager.StopBuild();
+    }
+
+   
 }

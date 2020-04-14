@@ -94,6 +94,10 @@ public class BuildManager : MonoBehaviour
 
         beingBuilt = Instantiate(toBuild, spawnPos, Quaternion.identity);
         Base b = beingBuilt.GetComponent<Base>();
+        int newStage = refBase.stage - 1;
+        b.stage = newStage;
+        b.baseStages[0].SetActive(false);
+        b.baseStages[newStage].SetActive(true);
         b.enabled = false;
 
         referanceBase = refBase;

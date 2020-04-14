@@ -11,7 +11,8 @@ public class Base : MonoBehaviour
     public int heldResource = 0;
     public int reqToUpgrade = 0;
     
-    private int stage = 0;
+    public int stage = 0;
+    public int numBuilds = 0;
     
     private List<AgentGameplay> agents = new List<AgentGameplay>();
 

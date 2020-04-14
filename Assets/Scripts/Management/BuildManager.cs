@@ -15,6 +15,7 @@ public class BuildManager : MonoBehaviour
     [SerializeField]
     GameObject toBuild; //need to change this to pull a dynamically allocated prefab.
 
+    private Base referanceBase;
     void Start()
     {
         
@@ -79,7 +80,7 @@ public class BuildManager : MonoBehaviour
         return result;
     }
 
-    public void BeginBuild(Vector3 basePos, string baseType)
+    public void BeginBuild(Vector3 basePos, Base refBase)
     {
         // enable sphere to show range. give it appropriate scale based on build radius.
         buildSphere.SetActive(true);
@@ -89,10 +90,14 @@ public class BuildManager : MonoBehaviour
         bool hit = false;
         Vector3 spawnPos = GetBuildSpherePos(false, ref hit);
 
-        toBuild = Resources.Load("Base_" + baseType) as GameObject;
+        toBuild = Resources.Load("Base_" + refBase.baseType) as GameObject;
 
         beingBuilt = Instantiate(toBuild, spawnPos, Quaternion.identity);
-        beingBuilt.GetComponent<Base>().enabled = false;
+        Base b = beingBuilt.GetComponent<Base>();
+        b.enabled = false;
+
+        referanceBase = refBase;
+
         building = true;
     }
 
@@ -107,6 +112,10 @@ public class BuildManager : MonoBehaviour
     {
         building = false;
         buildSphere.SetActive(false);
-        beingBuilt.GetComponent<Base>().enabled = true;
+        Base b = beingBuilt.GetComponent<Base>();
+        b.enabled = true;
+
+        referanceBase.numBuilds++;
+        b.numBuilds = referanceBase.numBuilds;
     }
 }

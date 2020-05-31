@@ -24,6 +24,10 @@ public class Base : MonoBehaviour
 
     public string baseType;
 
+    // for tap mechanic to boost agents
+    public float tapSeconds = 0.0f;
+    public float increasePercent = 0.0f;
+
 
     // Start is called before the first frame update
     void Start()
@@ -108,7 +112,9 @@ public class Base : MonoBehaviour
 
     public void addResources(int val)
     {
-        heldResource += val;
+        float percent = 1.0f + (increasePercent / 100.0f);
+        float fVal = (float)val * percent;
+        heldResource += (int)fVal;
     }
 
 

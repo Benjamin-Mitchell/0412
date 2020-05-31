@@ -24,6 +24,15 @@ public class UIManager : MonoBehaviour
     Text buildText;
 
     [SerializeField]
+    Text tapTimeDisplayText;
+    
+    [SerializeField]
+    Text tapBoostText;
+
+    [SerializeField]
+    Image tapFillBar;
+
+    [SerializeField]
     BuildManager buildManager;
 
     float baseResource = 0;
@@ -48,6 +57,7 @@ public class UIManager : MonoBehaviour
 
         UpdateUpgradeVisual();
         UpdateBuildVisual();
+        UpdateTapBoostVisual();
     }
 
     private void UpdateUpgradeVisual()
@@ -99,6 +109,29 @@ public class UIManager : MonoBehaviour
         float s = Mathf.Clamp(g, 0.4f, 1.0f);
         buildImage.transform.localScale = new Vector3(s, s, s);
 
+    }
+
+    private void UpdateTapBoostVisual()
+    {
+        if (baseRef.tapSeconds <= 0)
+            return;
+
+        baseRef.tapSeconds -= Time.deltaTime;
+
+
+        int hours = (int)Mathf.Floor(baseRef.tapSeconds / 3600.0f);
+        int minutes = (int)Mathf.Floor(baseRef.tapSeconds / 60.0f) - (hours * 60);
+        int seconds = (int)baseRef.tapSeconds % 60;
+
+        string displayText = hours.ToString() + "h " + minutes.ToString() + "m " + seconds.ToString() + "s";
+
+        tapTimeDisplayText.text = displayText;
+
+        // its an integer value  2                                     57
+        tapFillBar.fillAmount = ((float)minutes / 60.0f) + (((float)seconds / 60.0f) / 60.0f);
+
+        baseRef.increasePercent = 10 * hours;
+        tapBoostText.text = "Increased Resource Yield: " + baseRef.increasePercent + "%";
     }
 
     //For now you can only select bases
@@ -158,6 +191,12 @@ public class UIManager : MonoBehaviour
     private void RecalculateBuildReq()
     { 
         buildReq = (int)Mathf.Pow((int)Mathf.Pow((float)baseRef.reqToUpgrade, 1.2f), (int)Mathf.Pow((float)(baseRef.numBuilds + 1), 1.2f));
+    }
+
+    public void addTapBoost()
+    {
+        // adds 3 minutes to tap boost time.
+        baseRef.tapSeconds += 180.0f;
     }
    
 }

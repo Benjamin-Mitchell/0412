@@ -28,6 +28,8 @@ public class Base : MonoBehaviour
     public float tapSeconds = 0.0f;
     public float increasePercent = 0.0f;
 
+    public GameObject agentDefaultTarget;
+
 
     // Start is called before the first frame update
     void Start()
@@ -44,8 +46,6 @@ public class Base : MonoBehaviour
 
         AgentGameplay agent = Instantiate(agentPrefab, transform.position + transform.forward, Quaternion.identity).GetComponent<AgentGameplay>();
         agent.setBase(this);
-        //move agent some arbitrary amount forward.
-        agent.moveTo(transform.position + (transform.forward * 4.0f));
         agents.Add(agent);
 
         reqToUpgrade = requiredToUpgrade();

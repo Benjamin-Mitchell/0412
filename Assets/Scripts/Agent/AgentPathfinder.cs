@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 //TODO: change this name to AgentPathfinding
-public class A_Agent : MonoBehaviour
+public class AgentPathfinder : MonoBehaviour
 {
     List<Vector3> path = new List<Vector3>();
     Pathfinder pathFinder;

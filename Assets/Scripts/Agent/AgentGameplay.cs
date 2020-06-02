@@ -23,7 +23,7 @@ public class AgentGameplay : MonoBehaviour
     int currentStage = 0;
 
     [SerializeField]
-    private A_Agent agentPathfinding;
+    private AgentPathfinder agentPathfinding;
 
     private Resource moveToTarget;
     private Vector3 returnTarget;

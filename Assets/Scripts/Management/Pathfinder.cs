@@ -14,12 +14,28 @@ public class Pathfinder : MonoBehaviour
     /// </summary>
     class Node
     {
-        public struct intVector3
+        public struct IntVector3
         {
             public int x, y, z;
+
+            // customs operator, because c# .Equals() is slow.
+            public static bool operator == (IntVector3 a, IntVector3 b)
+            {
+                bool status = false;
+                status = (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
+                return status;
+            }
+
+            public static bool operator !=(IntVector3 a, IntVector3 b)
+            {
+                bool status = false;
+                if ((a.x != b.x) || (a.y != b.y) || (a.z != b.z))
+                    status = true;
+                return status;
+            }
         }
 
-        public intVector3 intVec3;
+        public IntVector3 intVec3;
 
         public Vector3 pos;
         public bool occupied;
@@ -48,6 +64,7 @@ public class Pathfinder : MonoBehaviour
 
     List<GameObject> obstacles;
 
+    int mapX, mapY, mapZ;
     Node[,,] grid;
 
     //pre-initialize lists, to remove GC overhead.
@@ -102,59 +119,22 @@ public class Pathfinder : MonoBehaviour
         return vector3Path;
     }
     
+
+    //This function is broken up to allow for easier profiling with Unity tools.
     List<Node> FindPath(Node from, Node to)
     {
-        /////////////float timeatstart = Time.realtimeSinceStartup;
-        open.Clear();
-        Node current;
-
-        current = from;
-        open.Add(current);
-        
-        //performant
-        foreach (Node node in grid)
-        {
-            node.clear();
-        }
-
-
-        /////////////float visitedContainsCheckTime = 0.0f;
-        /////////////float openContainsCheckTime = 0.0f;
-        /////////////float openAddCheckTime = 0.0f;
-        /////////////float createNeighboursTime = 0.0f;
-
+        Node current = FindPathInit(from);
 
         while (open.Count > 0)
         {
             current.f = current.g = current.h = 0;
-            if (current.intVec3.Equals(to.intVec3))
-            {
-                returnNodes.Clear();
-                // check this
-                while (current.parent != null)
-                {
-                    returnNodes.Add(current);
-                    current = current.parent;
-                }
-
-                /////////////Debug.Log("checking visited list took: " + (visitedContainsCheckTime));
-                /////////////Debug.Log("checking open contains list took: " + (openContainsCheckTime));
-                /////////////Debug.Log("adding node to Open took: " + (openAddCheckTime));
-                /////////////Debug.Log("Neighbours list took: " + (createNeighboursTime));
-
-                //float timeatend = Time.realtimeSinceStartup;
-                //Debug.Log("Pathfinding took: " + (timeatend - timeatstart));
+            if (CheckReached(current, to))
                 return returnNodes;
-            }
 
             current = open[0];
             open.Remove(current);
             current.open = false;
             current.visited = true;
-
-           //float g = Time.realtimeSinceStartup;
-           //List<Node> neighbours = GetValidNeighbours(current);
-           //createNeighboursTime += Time.realtimeSinceStartup - g;
 
             // check neighbours
             for (int x = -1; x < 2; x++)
@@ -165,64 +145,21 @@ public class Pathfinder : MonoBehaviour
                     {
                         
                         Node neighbour = null;
-                        float j = Time.realtimeSinceStartup;
                         // check its a valid neighbour
-                        {
+                        neighbour = CheckNeighbourValidity(x, y, z, current);
 
-                            // skip current node
-                            if (x == 0 && y == 0 && z == 0)
-                                continue;
-
-                            //neighbour position
-                            int newNodeX = current.intVec3.x + x;
-                            int newNodeY = current.intVec3.y + y;
-                            int newNodeZ = current.intVec3.z + z;
-
-                            // don't add off-screen nodes
-                            if (newNodeX < 0 || newNodeY < 0 || newNodeZ < 0 ||
-                                    newNodeX >= GameManager.Instance.mapX ||
-                                    newNodeY >= GameManager.Instance.mapY ||
-                                    newNodeZ >= GameManager.Instance.mapZ)
-                                continue;
-
-                            // don't add occupied nodes
-                            if (grid[newNodeX, newNodeY, newNodeZ].occupied)
-                                continue;
-
-                            neighbour = grid[newNodeX, newNodeY, newNodeZ];
-                        }
-                        /////////////createNeighboursTime += Time.realtimeSinceStartup - j;
-
-                        float a = Time.realtimeSinceStartup;
-                        // skip if aleady ruled out.
-                        if (neighbour.visited)
+                        if (neighbour == null)
                             continue;
-                        /////////////visitedContainsCheckTime += Time.realtimeSinceStartup - a;
-
 
                         float g = neighbour.g + nodeSize;
                         float h = manhattanHeuristic(neighbour, to);
                         float f = g + h;
 
-                        float b = Time.realtimeSinceStartup;
+                        //float b = Time.realtimeSinceStartup;
                         bool inOpen = neighbour.open;
-                        ///////////// openContainsCheckTime += Time.realtimeSinceStartup - b;
 
-                        float c = Time.realtimeSinceStartup;
-                        if (!inOpen || (inOpen && (neighbour.f > f)))
-                        {
-                            if (!inOpen)
-                            {
-                                neighbour.open = true;
-                                open.Add(neighbour);
-                            }
-
-                            neighbour.f = f;
-                            neighbour.g = g;
-                            neighbour.h = h;
-                            neighbour.parent = current;
-                        }
-                        /////////////openAddCheckTime += Time.realtimeSinceStartup - c;
+                        //float c = Time.realtimeSinceStartup;
+                        AddToOpenSet(inOpen, neighbour, f, g, h, current);
 
                     }
                 }
@@ -233,6 +170,88 @@ public class Pathfinder : MonoBehaviour
         Debug.Log("WARNING: Destination could not be found for path find!!");
         return null;
     }
+
+    Node FindPathInit(Node from)
+    {
+        open.Clear();
+        Node current;
+
+        current = from;
+        open.Add(current);
+
+        //performant
+        foreach (Node node in grid)
+        {
+            node.clear();
+        }
+
+        return current;
+    }
+    
+    bool CheckReached(Node current, Node to)
+    {
+        if (current.intVec3 == to.intVec3)
+        {
+            returnNodes.Clear();
+            // check this
+            while (current.parent != null)
+            {
+                returnNodes.Add(current);
+                current = current.parent;
+            }
+
+            return true;
+        }
+        return false;
+    }
+    
+    Node CheckNeighbourValidity(int x, int y, int z, Node current)
+    {
+        Node neighbour;
+        // skip current node
+        if (x == 0 && y == 0 && z == 0)
+            return null;
+
+        //neighbour position
+        int newNodeX = current.intVec3.x + x;
+        int newNodeY = current.intVec3.y + y;
+        int newNodeZ = current.intVec3.z + z;
+
+        // don't add off-screen nodes
+        if (newNodeX < 0 || newNodeY < 0 || newNodeZ < 0 ||
+                newNodeX >= mapX ||
+                newNodeY >= mapY ||
+                newNodeZ >= mapZ)
+            return null;
+
+        // don't add occupied nodes
+        if (grid[newNodeX, newNodeY, newNodeZ].occupied)
+            return null;
+
+        neighbour = grid[newNodeX, newNodeY, newNodeZ];
+        if (neighbour.visited)
+            return null;
+
+        return neighbour;
+    }
+
+    void AddToOpenSet(bool inOpen, Node neighbour, float f, float g, float h, Node current)
+    {
+        if (!inOpen || (inOpen && (neighbour.f > f)))
+        {
+            if (!inOpen)
+            {
+                neighbour.open = true;
+                open.Add(neighbour);
+            }
+
+            neighbour.f = f;
+            neighbour.g = g;
+            neighbour.h = h;
+            neighbour.parent = current;
+        }
+    }
+
 
     float manhattanHeuristic(Node from, Node to)
     {
@@ -277,10 +296,13 @@ public class Pathfinder : MonoBehaviour
 
     void Awake()
     {
-        grid = new Node[GameManager.Instance.mapX, GameManager.Instance.mapY, GameManager.Instance.mapZ];
+        mapX = GameManager.Instance.mapX;
+        mapY = GameManager.Instance.mapY;
+        mapZ = GameManager.Instance.mapZ;
+        grid = new Node[mapX, mapY, mapZ];
 
         // Assumption made that map will never be taller (Y) than it is wide/long (X/Z).
-        int maxGridTraversal = GameManager.Instance.mapX + GameManager.Instance.mapZ;
+        int maxGridTraversal = mapX + mapZ;
         open = new List<Node>(maxGridTraversal);
         returnNodes = new List<Node>(maxGridTraversal);
         vector3Path = new List<Vector3>(maxGridTraversal);

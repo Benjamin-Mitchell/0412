@@ -50,6 +50,12 @@ public class Pathfinder : MonoBehaviour
 
     Node[,,] grid;
 
+    //pre-initialize lists, to remove GC overhead.
+    List<Node> open;
+    List<Node> returnNodes;
+    List<Node> neighbours;
+    List<Vector3> vector3Path;
+
     /// <summary>
     /// A_Star bits
     /// </summary>
@@ -80,7 +86,8 @@ public class Pathfinder : MonoBehaviour
         if (nodePath == null)
             return null;
 
-        List<Vector3> vector3Path = new List<Vector3>();
+        vector3Path.Clear();
+        
 
         //invert path and convert to Vector3
         // i > 0 as we don't want to add last one, see below comment
@@ -98,7 +105,7 @@ public class Pathfinder : MonoBehaviour
     List<Node> FindPath(Node from, Node to)
     {
         /////////////float timeatstart = Time.realtimeSinceStartup;
-        List<Node> open = new List<Node>();
+        open.Clear();
         Node current;
 
         current = from;
@@ -122,7 +129,7 @@ public class Pathfinder : MonoBehaviour
             current.f = current.g = current.h = 0;
             if (current.intVec3.Equals(to.intVec3))
             {
-                List<Node> returnNodes = new List<Node>();
+                returnNodes.Clear();
                 // check this
                 while (current.parent != null)
                 {
@@ -234,7 +241,7 @@ public class Pathfinder : MonoBehaviour
 
     List<Node> GetValidNeighbours(Node node)
     {
-        List<Node> neighbours = new List<Node>();
+        neighbours.Clear();
         
         for (int x = -1; x < 2; x++)
         {
@@ -271,6 +278,15 @@ public class Pathfinder : MonoBehaviour
     void Awake()
     {
         grid = new Node[GameManager.Instance.mapX, GameManager.Instance.mapY, GameManager.Instance.mapZ];
+
+        // Assumption made that map will never be taller (Y) than it is wide/long (X/Z).
+        int maxGridTraversal = GameManager.Instance.mapX + GameManager.Instance.mapZ;
+        open = new List<Node>(maxGridTraversal);
+        returnNodes = new List<Node>(maxGridTraversal);
+        vector3Path = new List<Vector3>(maxGridTraversal);
+
+        int maxNeighbours = 26;
+        neighbours = new List<Node>(maxNeighbours);
 
         transform.position = centrePos;
 

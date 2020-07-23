@@ -8,12 +8,23 @@ public class BuildManager : MonoBehaviour
 
     public bool building = false;
     GameObject beingBuilt;
+    Base beingBuiltBaseComp;
 
     [SerializeField]
     GameObject buildSphere;
 
     [SerializeField]
     GameObject toBuild; //need to change this to pull a dynamically allocated prefab.
+
+    [SerializeField]
+    InputManager inputManager;
+
+    [SerializeField]
+    UIManager _UIManager;
+
+    //Vector3 previousPos
+    bool pickedBuildTarget = false;
+    float rotationSpeed = 1.0f;
 
     private Base referanceBase;
     void Start()
@@ -27,23 +38,55 @@ public class BuildManager : MonoBehaviour
         if (building)
         {
             bool hit = false;
-            Vector3 point = GetBuildSpherePos(true, ref hit);
+			beingBuilt.transform.Rotate(new Vector3(0.2f, 0.2f, 0.0f));
 
 #if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
             // if desktop, show where it will be placed.
-            if (hit)
+            Vector3 point = GetBuildSpherePos(true, ref hit);
+
+#elif (UNITY_ANDROID || UNITY_IOS)
+            if ((Input.touchCount > 0) && (Input.GetTouch(0).phase == TouchPhase.Began))
+            {
+                Vector3 point = GetBuildSpherePos(true, ref hit);
+#endif
+            if (hit && !pickedBuildTarget)
             {
                 beingBuilt.transform.position = point;
+                beingBuiltBaseComp.baseStages[beingBuiltBaseComp.stage].SetActive(true);
+
+#if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
                 if (Input.GetMouseButtonDown(0))
-                    FinishBuild();
+                {
+#endif
+                    _UIManager.enableConfirmUI(FinishBuild);
+                    pickedBuildTarget = true;
+                    //TODO: some text to display how to rotate?
+#if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
+                }
+#endif
+                //NEED TO DISABLE BASE FUNCTIONALITY UNTIL BUILT!!
+
+                //TODO: APPLY A COOL EFFECT HERE (WHILE BUILDING EFFECT)
+
             }
-#elif (UNITY_ANDROID || UNITY_IOS)
-            // IMPLEMENT
-            // if mobile, allow users to tap where they might want it,
+#if (UNITY_ANDROID || UNITY_IOS) && !(UNITY_EDITOR || UNITY_STANDALONE_WIN)
+            }
 #endif
 
-
-            //add a "build?" check.
+            //if (pickedBuildTarget
+#if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
+            //        && Input.GetMouseButton(0)
+#elif (UNITY_ANDROID || UNITY_IOS)
+            //        && (Input.touchCount > 0)
+#endif
+            //)
+            //{
+            //    float XaxisRotation = Input.GetAxis("Mouse X") * rotationSpeed;
+            //    float YaxisRotation = Input.GetAxis("Mouse Y") * rotationSpeed;
+            //    // select the axis by which you want to rotate the GameObject
+            //    beingBuilt.transform.Rotate(Vector3.down, XaxisRotation);
+            //    beingBuilt.transform.Rotate(Vector3.right, YaxisRotation);
+            //}
         }
     }
 
@@ -61,8 +104,7 @@ public class BuildManager : MonoBehaviour
             // if desktop, show where it will be placed.
             ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 #elif (UNITY_ANDROID || UNITY_IOS)
-            //IMPLEMENT
-
+            ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
 #endif
         }
 
@@ -93,12 +135,14 @@ public class BuildManager : MonoBehaviour
         toBuild = Resources.Load("Base_" + refBase.baseType) as GameObject;
 
         beingBuilt = Instantiate(toBuild, spawnPos, Quaternion.identity);
-        Base b = beingBuilt.GetComponent<Base>();
+        beingBuiltBaseComp = beingBuilt.GetComponent<Base>();
         int newStage = refBase.stage - 1;
-        b.stage = newStage;
-        b.baseStages[0].SetActive(false);
-        b.baseStages[newStage].SetActive(true);
-        b.enabled = false;
+        beingBuiltBaseComp.stage = newStage;
+        beingBuiltBaseComp.baseStages[0].SetActive(false);
+#if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
+        beingBuiltBaseComp.baseStages[newStage].SetActive(true);
+        beingBuiltBaseComp.enabled = false;
+#endif
 
         referanceBase = refBase;
 
@@ -116,10 +160,12 @@ public class BuildManager : MonoBehaviour
     {
         building = false;
         buildSphere.SetActive(false);
-        Base b = beingBuilt.GetComponent<Base>();
-        b.enabled = true;
-
+        //Base b = beingBuilt.GetComponent<Base>();
+        beingBuiltBaseComp.enabled = true;
+        beingBuilt.transform.eulerAngles = new Vector3(Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f));
+		_UIManager.DefaultState();
         referanceBase.numBuilds++;
-        b.numBuilds = referanceBase.numBuilds;
+        beingBuiltBaseComp.numBuilds = referanceBase.numBuilds;
+        pickedBuildTarget = false;
     }
 }

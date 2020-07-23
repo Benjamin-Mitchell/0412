@@ -35,6 +35,12 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     BuildManager buildManager;
 
+    [SerializeField]
+    GameObject confirmUI;
+
+    public delegate void confirmDelegate();
+    public confirmDelegate confirm;
+
     float baseResource = 0;
     float baseReqToUpdate = 0;
     bool fullyUpgraded = false;
@@ -184,8 +190,9 @@ public class UIManager : MonoBehaviour
     public void DefaultState()
     {
         backArrow.SetActive(false);
+		confirmUI.SetActive(false);
         UI_object.SetActive(true);
-        buildManager.StopBuild();
+        //buildManager.StopBuild();
     }
 
     private void RecalculateBuildReq()
@@ -199,4 +206,18 @@ public class UIManager : MonoBehaviour
         baseRef.tapSeconds += 180.0f;
     }
    
+
+
+    // TODO: add this for the return button as well.
+    public void enableConfirmUI(confirmDelegate confirmable)
+    {
+        Debug.Log("asd");
+        confirmUI.SetActive(true);
+        confirm = confirmable;
+    }
+
+    public void onTapConfirm()
+    {
+        confirm?.Invoke();
+    }
 }

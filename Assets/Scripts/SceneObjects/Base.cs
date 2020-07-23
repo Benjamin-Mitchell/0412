@@ -22,6 +22,9 @@ public class Base : MonoBehaviour
     [SerializeField]
     private Text resourceText;
 
+	[SerializeField]
+	public Vector3 rotationFactor;
+
     public string baseType;
 
     // for tap mechanic to boost agents
@@ -57,6 +60,8 @@ public class Base : MonoBehaviour
         UpdateAgents();
 
         resourceText.text = heldResource.ToString();
+
+		transform.Rotate(rotationFactor);
 
 
         //DEBUG ONLY

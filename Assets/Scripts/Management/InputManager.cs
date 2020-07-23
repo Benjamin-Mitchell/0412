@@ -12,6 +12,9 @@ public class InputManager : MonoBehaviour
 
     [SerializeField]
     GameObject cam;
+
+
+    public bool inputEnabled = true;
     //
     private bool dragging;
     private Vector2 previousPos;
@@ -54,7 +57,7 @@ public class InputManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!traversing)
+        if (!traversing && inputEnabled)
         {
 
             //object tap control
@@ -162,7 +165,7 @@ public class InputManager : MonoBehaviour
                 cam.transform.position = position;
             }
         }
-        else //traversing
+        else if (traversing)
         {
             //move towards traversal target within traversal time.
             float step = traversalSpeed * Time.deltaTime;
@@ -201,7 +204,7 @@ public class InputManager : MonoBehaviour
     }
 
 
-    Vector2 getInputScreenPos(int n)
+    public Vector2 getInputScreenPos(int n)
     {
         Vector3 pos;
 #if (UNITY_EDITOR || UNITY_STANDALONE_WIN)

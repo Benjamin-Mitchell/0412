@@ -90,6 +90,8 @@ public class UIManager : MonoBehaviour
         float a = 0.5f + (percent / 2.0f);
         resourceImage.color = new Color(r, g, 0.0f, a);
 
+		g = Mathf.Max(g, 0.2f);
+
         resourceImage.transform.localScale = new Vector3(g, g, g);
     }
 
@@ -152,7 +154,9 @@ public class UIManager : MonoBehaviour
 
     public void DisableUI()
     {
-        UI_object.SetActive(false);
+		revertUI.SetActive(false);
+		confirmUI.SetActive(false);
+		UI_object.SetActive(false);
         fullyUpgraded = false;
     }
 
@@ -195,7 +199,6 @@ public class UIManager : MonoBehaviour
         revertUI.SetActive(false);
 		confirmUI.SetActive(false);
         UI_object.SetActive(true);
-        //buildManager.StopBuild();
     }
 
     private void RecalculateBuildReq()
@@ -208,10 +211,7 @@ public class UIManager : MonoBehaviour
         // adds 3 minutes to tap boost time.
         baseRef.tapSeconds += 180.0f;
     }
-   
 
-
-    // TODO: add this for the return button as well.
     public void enableConfirmUI(ConfirmDelegate confirmable)
     {
         confirmUI.SetActive(true);

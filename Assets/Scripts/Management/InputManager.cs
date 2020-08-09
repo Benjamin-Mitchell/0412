@@ -66,26 +66,28 @@ public class InputManager : MonoBehaviour
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 #elif (UNITY_ANDROID || UNITY_IOS)
-            if ((Input.touchCount > 0) && (Input.GetTouch(0).phase == TouchPhase.Ended /*TouchPhase.Began*/))   //might need to modify this for zooming -> rotating change
+            if ((Input.touchCount > 0) && (Input.GetTouch(0).phase == TouchPhase.Ended))   //might need to modify this for zooming -> rotating change
             {
                    Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
 #endif
                 RaycastHit hit;
-                if (Physics.Raycast(ray, out hit))
-                {
-                    if (hit.collider.CompareTag("Base"))
-                    {
-                        if (_UIManager)
-                            _UIManager.EnableUI(hit.collider.gameObject.GetComponent<Base>());
-                        traversing = true;
-                        camLookAt = hit.collider.gameObject.transform.position;
-                        CalcTraversalTarget();
-                        return;
-                    }
-                }
+
+				//don't allow object swapping if building.
+				//TODO: Should a player be allowed to tap on the object to cancel building?
+				if (!buildManager.building)
+				{
+					if (Physics.Raycast(ray, out hit))
+					{
+						if (hit.collider.CompareTag("Base"))
+						{
+							MoveCamTo(hit.collider.gameObject.GetComponent<Base>());
+							return;
+						}
+					}
+				}
             }
 #if ((UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR)
-            else if ((Input.touchCount > 0) && (Input.GetTouch(0).phase == TouchPhase.Began /*TouchPhase.Began*/))
+            else if ((Input.touchCount > 0) && (Input.GetTouch(0).phase == TouchPhase.Began))
             {
                     dragging = true;
                     previousPos = getInputScreenPos(0);
@@ -194,6 +196,16 @@ public class InputManager : MonoBehaviour
         }
 
     }
+
+	public void MoveCamTo(Base b)
+	{
+		if (_UIManager)
+			_UIManager.EnableUI(b);
+		traversing = true;
+		camLookAt = b.gameObject.transform.position;
+		CalcTraversalTarget();
+	}
+
     public static float ClampAngle(float angle, float min, float max)
     {
         if (angle < -360F)

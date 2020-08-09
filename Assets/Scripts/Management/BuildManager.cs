@@ -58,6 +58,7 @@ public class BuildManager : MonoBehaviour
                 if (Input.GetMouseButtonDown(0))
                 {
 #endif
+
                     _UIManager.enableConfirmUI(FinishBuild);
                     pickedBuildTarget = true;
                     //TODO: some text to display how to rotate?
@@ -168,10 +169,14 @@ public class BuildManager : MonoBehaviour
         beingBuiltBaseComp.enabled = true;
         beingBuilt.transform.eulerAngles = new Vector3(Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f));
 
-		Base b = beingBuilt.GetComponent<Base>();
-		b.heldResource -= b.reqToBuild;
+		referanceBase.heldResource -= referanceBase.reqToBuild;
 
-		_UIManager.DefaultState();
+		inputManager.MoveCamTo(beingBuilt.GetComponent<Base>());
+
+		
+		_UIManager.DisableUI();
+
+
         referanceBase.numBuilds++;
         beingBuiltBaseComp.numBuilds = referanceBase.numBuilds;
         pickedBuildTarget = false;

@@ -10,6 +10,7 @@ public class Base : MonoBehaviour
 
     public int heldResource = 0;
     public int reqToUpgrade = 0;
+    public int reqToBuild = 0;
     
     public int stage = 0;
     public int numBuilds = 0;

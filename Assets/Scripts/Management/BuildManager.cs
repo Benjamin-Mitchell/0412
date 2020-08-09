@@ -14,7 +14,7 @@ public class BuildManager : MonoBehaviour
     GameObject buildSphere;
 
     [SerializeField]
-    GameObject toBuild; //need to change this to pull a dynamically allocated prefab.
+    GameObject assetToBuild; //need to change this to pull a dynamically allocated prefab.
 
     [SerializeField]
     InputManager inputManager;
@@ -35,7 +35,7 @@ public class BuildManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (building)
+		if (building)
         {
             bool hit = false;
 			beingBuilt.transform.Rotate(new Vector3(0.2f, 0.2f, 0.0f));
@@ -132,9 +132,9 @@ public class BuildManager : MonoBehaviour
         bool hit = false;
         Vector3 spawnPos = GetBuildSpherePos(false, ref hit);
 
-        toBuild = Resources.Load("Base_" + refBase.baseType) as GameObject;
+		assetToBuild = Resources.Load("Base_" + refBase.baseType) as GameObject;
 
-        beingBuilt = Instantiate(toBuild, spawnPos, Quaternion.identity);
+        beingBuilt = Instantiate(assetToBuild, spawnPos, Quaternion.identity);
         beingBuiltBaseComp = beingBuilt.GetComponent<Base>();
         int newStage = refBase.stage - 1;
         beingBuiltBaseComp.stage = newStage;
@@ -152,20 +152,30 @@ public class BuildManager : MonoBehaviour
     public void StopBuild()
     {
         building = false;
+
         buildSphere.SetActive(false);
-        Destroy(toBuild);
+        Destroy(beingBuilt);
+
+		pickedBuildTarget = false;
+		beingBuilt = null;
     }
 
     void FinishBuild()
     {
         building = false;
         buildSphere.SetActive(false);
-        //Base b = beingBuilt.GetComponent<Base>();
+        
         beingBuiltBaseComp.enabled = true;
         beingBuilt.transform.eulerAngles = new Vector3(Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f));
+
+		Base b = beingBuilt.GetComponent<Base>();
+		b.heldResource -= b.reqToBuild;
+
 		_UIManager.DefaultState();
         referanceBase.numBuilds++;
         beingBuiltBaseComp.numBuilds = referanceBase.numBuilds;
         pickedBuildTarget = false;
-    }
+
+		beingBuilt = null;
+	}
 }

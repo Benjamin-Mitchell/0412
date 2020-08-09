@@ -9,9 +9,6 @@ public class UIManager : MonoBehaviour
     GameObject UI_object;
 
     [SerializeField]
-    GameObject backArrow;
-
-    [SerializeField]
     Image resourceImage;
 
     [SerializeField]
@@ -38,15 +35,19 @@ public class UIManager : MonoBehaviour
     [SerializeField]
     GameObject confirmUI;
 
-    public delegate void confirmDelegate();
-    public confirmDelegate confirm;
+	[SerializeField]
+	GameObject revertUI;
 
-    float baseResource = 0;
+	public delegate void ConfirmDelegate();
+    public ConfirmDelegate confirm;
+
+	public delegate void RevertDelegate();
+	public RevertDelegate revert;
+
+	float baseResource = 0;
     float baseReqToUpdate = 0;
     bool fullyUpgraded = false;
     Base baseRef = null;
-
-    int buildReq;
 
     // Start is called before the first frame update
     void Start()
@@ -104,9 +105,9 @@ public class UIManager : MonoBehaviour
         buildText.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 
         // costs reqToUpgrade ^ 2;
-        buildText.text = "Build (" + ReturnValueAstring(buildReq) + ")";
+        buildText.text = "Build (" + ReturnValueAstring(baseRef.reqToBuild) + ")";
 
-        float percent = ((float)baseRef.heldResource / (float)buildReq);
+        float percent = ((float)baseRef.heldResource / (float)baseRef.reqToBuild);
         float r = 1.0f - percent;
         float g = percent;
 
@@ -173,31 +174,33 @@ public class UIManager : MonoBehaviour
 
     public void BuildProcess()
     {
-        if (baseRef.heldResource < buildReq)
+        if (baseRef.heldResource < baseRef.reqToBuild)
             return;
 
         RecalculateBuildReq();
 
-        baseRef.heldResource -= buildReq;
-
         // disable UI (except return arrow).
         UI_object.SetActive(false);
-        backArrow.SetActive(true);
+
+		//enable return arrow, add functions to revert delegate
+		RevertDelegate revertable = DefaultState;
+		revertable += buildManager.StopBuild;
+		enableRevertUI(revertable);
 
         buildManager.BeginBuild(baseRef.transform.position, baseRef);
     }
 
     public void DefaultState()
     {
-        backArrow.SetActive(false);
+        revertUI.SetActive(false);
 		confirmUI.SetActive(false);
         UI_object.SetActive(true);
         //buildManager.StopBuild();
     }
 
     private void RecalculateBuildReq()
-    { 
-        buildReq = (int)Mathf.Pow((int)Mathf.Pow((float)baseRef.reqToUpgrade, 1.2f), (int)Mathf.Pow((float)(baseRef.numBuilds + 1), 1.2f));
+    {
+		baseRef.reqToBuild = (int)Mathf.Pow((int)Mathf.Pow((float)baseRef.reqToUpgrade, 1.2f), (int)Mathf.Pow((float)(baseRef.numBuilds + 1), 1.2f));
     }
 
     public void addTapBoost()
@@ -209,15 +212,25 @@ public class UIManager : MonoBehaviour
 
 
     // TODO: add this for the return button as well.
-    public void enableConfirmUI(confirmDelegate confirmable)
+    public void enableConfirmUI(ConfirmDelegate confirmable)
     {
-        Debug.Log("asd");
         confirmUI.SetActive(true);
         confirm = confirmable;
     }
 
-    public void onTapConfirm()
+	public void enableRevertUI(RevertDelegate revertable)
+	{
+		revertUI.SetActive(true);
+		revert = revertable;
+	}
+
+	public void onTapConfirm()
     {
         confirm?.Invoke();
     }
+
+	public void onTapRevert()
+	{
+		revert?.Invoke();
+	}
 }

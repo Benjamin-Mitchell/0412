@@ -6,7 +6,8 @@ using UnityEngine.UI;
 public class Base : MonoBehaviour
 {
     public GameObject[] baseStages = new GameObject[5];
-    public GameObject agentPrefab;
+
+    public float[] sphereScalingFactors = new float[5];
 
     public int heldResource = 0;
     public int reqToUpgrade = 0;
@@ -20,9 +21,6 @@ public class Base : MonoBehaviour
     //TODO: this should probably be held globally somewhere instead of updated for each base.
     private List<Resource> resourcesInScene = new List<Resource>();
 
-    [SerializeField]
-    private Text resourceText;
-
 	[SerializeField]
 	public Vector3 rotationFactor;
 
@@ -34,17 +32,20 @@ public class Base : MonoBehaviour
 
     public GameObject agentDefaultTarget;
 
+    public GameObject buildSphere;
+
+    private void Awake()
+    {
+        GameObject spherePrefab = (GameObject)Resources.Load("BuildSphere", typeof(GameObject));
+        buildSphere = GameObject.Instantiate(spherePrefab, transform.position, Quaternion.identity);
+        buildSphere.SetActive(false);
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         baseType = gameObject.name.Contains("Clone") ? gameObject.name.Substring(5, gameObject.name.Length - 5 - 7) : gameObject.name.Substring(5);
-        agentPrefab = (GameObject)Resources.Load("Agent_" + baseType, typeof(GameObject));
-        //add this base to resourceSpawner
-        ResourceSpawner spawner = GameObject.FindGameObjectWithTag("ResourceSpawner").GetComponent<ResourceSpawner>();
-
-        spawner.addBaseToListing(this);
-
+        GameObject agentPrefab = (GameObject)Resources.Load("Agent_" + baseType, typeof(GameObject));
 
         baseStages[stage].SetActive(true);
 
@@ -59,8 +60,6 @@ public class Base : MonoBehaviour
     void Update()
     {
         UpdateAgents();
-
-        resourceText.text = heldResource.ToString();
 
 		transform.Rotate(rotationFactor);
 

@@ -4,20 +4,19 @@ using UnityEngine;
 
 public class BuildManager : MonoBehaviour
 {
-    // Start is called before the first frame update
+	public List<Base> allBases = new List<Base>();
 
-    public bool building = false;
+	public bool building = false;
     GameObject beingBuilt;
     Base beingBuiltBaseComp;
-
-    [SerializeField]
-    GameObject buildSphere;
 
     [SerializeField]
     GameObject assetToBuild; //need to change this to pull a dynamically allocated prefab.
 
     [SerializeField]
     InputManager inputManager;
+
+    GameManager gameManager;
 
     [SerializeField]
     UIManager _UIManager;
@@ -29,16 +28,71 @@ public class BuildManager : MonoBehaviour
     private Base referanceBase;
     void Start()
     {
-        
+        gameManager = GameManager.Instance;
+
+        if (!gameManager.finishedIntroduction)
+        {
+            assetToBuild = (GameObject)Resources.Load("Base_Dirty", typeof(GameObject));
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-		if (building)
+        if (!gameManager.finishedIntroduction)
+            IntroLoop();
+        else
+            DefaultPlayLoop();
+    }
+
+    /// <summary>
+    /// INTRO SECTION START
+    /// </summary>
+
+    void IntroLoop()
+    {
+        if(building)
+        {
+
+        }
+    }
+
+    public void BeginIntroBuild()
+    {
+        Vector3 defaultStartPosition = new Vector3(10.0f, 10.0f, 10.0f);
+        beingBuilt = Instantiate(assetToBuild, defaultStartPosition, Quaternion.identity);
+		allBases.Add(beingBuilt.GetComponent<Base>());
+
+        _UIManager.DisableBuildUI();
+
+        //TODO: Remove/rework this for actual introduction.
+        EndIntroBuild();
+    }
+
+
+    void EndIntroBuild()
+    {
+
+        //TODO: Remove/rework this for actual introduction.
+        gameManager.finishedIntroduction = true;
+    }
+
+
+    /// <summary>
+    /// INTRO SECTION END
+    /// </summary>
+
+    /// <summary>
+    /// DEFAULT PLAY SECTION START
+    /// </summary>
+
+
+    void DefaultPlayLoop()
+    {
+        if (building)
         {
             bool hit = false;
-			beingBuilt.transform.Rotate(new Vector3(0.2f, 0.2f, 0.0f));
+            beingBuilt.transform.Rotate(new Vector3(0.2f, 0.2f, 0.0f));
 
 #if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
             // if desktop, show where it will be placed.
@@ -91,6 +145,7 @@ public class BuildManager : MonoBehaviour
         }
     }
 
+
     private Vector3 GetBuildSpherePos(bool livePos, ref bool success)
     {
         success = false;
@@ -113,7 +168,7 @@ public class BuildManager : MonoBehaviour
         int layerMask = ~ LayerMask.GetMask("Base");
         if (Physics.Raycast(ray, out hit, 150.0f, layerMask))
         {
-            if (hit.collider.gameObject.name == "BuildSphere")
+            if (hit.collider.gameObject.name.Contains("BuildSphere"))
             {
                 result = hit.point;
                 success = true;
@@ -123,38 +178,56 @@ public class BuildManager : MonoBehaviour
         return result;
     }
 
-    public void BeginBuild(Vector3 basePos, Base refBase)
-    {
-        // enable sphere to show range. give it appropriate scale based on build radius.
-        buildSphere.SetActive(true);
-        buildSphere.transform.localScale = new Vector3(15.0f, 15.0f, 15.0f);
-        buildSphere.transform.position = basePos;
+	public void BeginBuild(Base refBase, bool isFreshBuild, string baseType = "")
+	{
+		bool hit = false;
+		Vector3 spawnPos = GetBuildSpherePos(false, ref hit);
 
-        bool hit = false;
-        Vector3 spawnPos = GetBuildSpherePos(false, ref hit);
+		string s = isFreshBuild ? baseType : refBase.baseType;
+		assetToBuild = Resources.Load("Base_" + s) as GameObject;
 
-		assetToBuild = Resources.Load("Base_" + refBase.baseType) as GameObject;
+		beingBuilt = Instantiate(assetToBuild, spawnPos, Quaternion.identity);
+		beingBuiltBaseComp = beingBuilt.GetComponent<Base>();
 
-        beingBuilt = Instantiate(assetToBuild, spawnPos, Quaternion.identity);
-        beingBuiltBaseComp = beingBuilt.GetComponent<Base>();
-        int newStage = refBase.stage - 1;
+		int newStage = isFreshBuild ? 0 : refBase.stage - 1;
         beingBuiltBaseComp.stage = newStage;
+
         beingBuiltBaseComp.baseStages[0].SetActive(false);
+
 #if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
         beingBuiltBaseComp.baseStages[newStage].SetActive(true);
         beingBuiltBaseComp.enabled = false;
 #endif
+		if (isFreshBuild)
+		{
+			foreach(Base b in allBases)
+			{
+				b.buildSphere.SetActive(true);
+				b.buildSphere.transform.localScale = new Vector3(15.0f, 15.0f, 15.0f);
+			}
+		}
+		else
+		{
+			// enable sphere to show range. give it appropriate scale based on build radius.
+			refBase.buildSphere.SetActive(true);
+
+			//need to organize individual sphere scales (factor in base type, base stage and isFreshBuild)
+			refBase.buildSphere.transform.localScale = new Vector3(15.0f, 15.0f, 15.0f);
+		}
 
         referanceBase = refBase;
 
-        building = true;
+		building = true;
     }
 
     public void StopBuild()
     {
         building = false;
 
-        buildSphere.SetActive(false);
+		//there can be no refeance base when we are building a fresh base. 
+		foreach(Base b in allBases)
+			b.buildSphere.SetActive(false);
+
         Destroy(beingBuilt);
 
 		pickedBuildTarget = false;
@@ -163,24 +236,53 @@ public class BuildManager : MonoBehaviour
 
     void FinishBuild()
     {
-        building = false;
-        buildSphere.SetActive(false);
-        
-        beingBuiltBaseComp.enabled = true;
+		//if its a fresh build, there was never a referance base assigned.
+		bool isFreshBuild = referanceBase == null;
+		
+		building = false;
+
+		if(isFreshBuild)
+			foreach(Base b in allBases) { b.buildSphere.SetActive(false); }
+		else
+			referanceBase.buildSphere.SetActive(false);
+
+		beingBuiltBaseComp.enabled = true;
+		allBases.Add(beingBuiltBaseComp);
+
+		//update sphere position for new base (in its final position)
+		beingBuiltBaseComp.buildSphere.transform.position = beingBuiltBaseComp.gameObject.transform.position;
+
         beingBuilt.transform.eulerAngles = new Vector3(Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f));
 
-		referanceBase.heldResource -= referanceBase.reqToBuild;
+		if(!isFreshBuild)
+			referanceBase.heldResource -= referanceBase.reqToBuild;
 
 		inputManager.MoveCamTo(beingBuilt.GetComponent<Base>());
 
-		
 		_UIManager.DisableUI();
 
-
-        referanceBase.numBuilds++;
-        beingBuiltBaseComp.numBuilds = referanceBase.numBuilds;
+		if (!isFreshBuild)
+		{
+			referanceBase.numBuilds++;
+			beingBuiltBaseComp.numBuilds = referanceBase.numBuilds;
+		}
         pickedBuildTarget = false;
 
 		beingBuilt = null;
+	}
+
+	//TODO: Update with new types when they are ready.
+	string[] types = new string[5] { "Dirty", "Pie", "Dirty", "Dirty", "Dirty" };
+	public void BuildFreshBase(int baseTypeIndex)
+	{
+		if(!gameManager.finishedIntroduction)
+		{
+			BeginIntroBuild();
+		}
+		else
+		{
+			BeginBuild(null, true, types[baseTypeIndex]);
+			_UIManager.BuildFreshProcess();
+		}
 	}
 }

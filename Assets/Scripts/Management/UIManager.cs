@@ -38,7 +38,13 @@ public class UIManager : MonoBehaviour
 	[SerializeField]
 	GameObject revertUI;
 
-	public delegate void ConfirmDelegate();
+    [SerializeField]
+    GameObject BuildNewUI;
+
+    [SerializeField]
+    GameObject HammerUI;
+
+    public delegate void ConfirmDelegate();
     public ConfirmDelegate confirm;
 
 	public delegate void RevertDelegate();
@@ -187,18 +193,50 @@ public class UIManager : MonoBehaviour
         UI_object.SetActive(false);
 
 		//enable return arrow, add functions to revert delegate
-		RevertDelegate revertable = DefaultState;
+		RevertDelegate revertable = DefaultStateBaseUIEnabled;
 		revertable += buildManager.StopBuild;
 		enableRevertUI(revertable);
 
-        buildManager.BeginBuild(baseRef.transform.position, baseRef);
+        buildManager.BeginBuild(baseRef, false);
     }
+
+	public void BuildFreshProcess()
+	{
+		RevertDelegate revertable = DefaultStatebuildEnabled;
+		revertable += buildManager.StopBuild;
+		enableRevertUI(revertable);
+	}
 
     public void DefaultState()
     {
         revertUI.SetActive(false);
 		confirmUI.SetActive(false);
-        UI_object.SetActive(true);
+		BuildNewUI.SetActive(false);
+        UI_object.SetActive(false);
+    }
+
+	public void DefaultStatebuildEnabled()
+	{
+		DefaultState();
+		BuildNewUI.SetActive(true);
+	}
+
+	public void DefaultStateBaseUIEnabled()
+	{
+		DefaultState();
+		UI_object.SetActive(true);
+	}
+
+	public void EnableBuildUI()
+    {
+        BuildNewUI.SetActive(true);
+        HammerUI.SetActive(false);
+    }
+
+    public void DisableBuildUI()
+    {
+        BuildNewUI.SetActive(false);
+        HammerUI.SetActive(true);
     }
 
     private void RecalculateBuildReq()

@@ -8,6 +8,13 @@ public class GameManager : Singleton<GameManager>
     public int mapY = 10;
     public int mapZ = 10;
 
+    public bool finishedIntroduction = false;
+
+    void Awake()
+    {
+        //this is where loading should happen
+    }
+
     // Start is called before the first frame update
     void Start()
     {

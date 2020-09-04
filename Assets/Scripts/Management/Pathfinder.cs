@@ -59,7 +59,7 @@ public class Pathfinder : MonoBehaviour
 
     //public static int gridSize = 10;
     public static float nodeSize = 1.0f;
-    public static Vector3 centrePos = new Vector3(0.0f, 0.0f, 0.0f);
+    public static Vector3 centrePos;
     public Vector3 gridBottomCorner;
 
     List<GameObject> obstacles;
@@ -318,8 +318,10 @@ public class Pathfinder : MonoBehaviour
         //gridBottomCorner = centrePos - (new Vector3(gridSize / 2.0f, gridSize / 2.0f, gridSize / 2.0f) * nodeSize);
         gridBottomCorner = Vector3.zero;
 
-        //initiate grid
-        InitiateGrid();
+		centrePos = new Vector3(gridBottomCorner.x + (mapX / 2.0f), gridBottomCorner.y + (mapZ / 2.0f), gridBottomCorner.z + (mapZ / 2.0f));
+
+		//initiate grid
+		InitiateGrid();
 
         //populate grid with inital objects.
         UpdateGridWithObstacles();
@@ -338,10 +340,12 @@ public class Pathfinder : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
-    }
+#if UNITY_EDITOR
+		drawOuterGrid();
+#endif
+	}
 
-    void InitiateGrid()
+	void InitiateGrid()
     {
         for(int x = 0; x < GameManager.Instance.mapX; x++)
         {
@@ -444,8 +448,10 @@ public class Pathfinder : MonoBehaviour
         return grid[nodeX, nodeY, nodeZ];
     }
 
-    //JUST FOR TESTING
-    void drawGrid()
+	/////////////////////////////////////////////
+	///JUST FOR TESTING
+	/////////////////////////////////////////////
+	void drawGrid()
     {
         MeshFilter filter = gameObject.GetComponent<MeshFilter>();
         var mesh = new Mesh();
@@ -469,4 +475,65 @@ public class Pathfinder : MonoBehaviour
             }
         }
     }
+
+	void drawOuterGrid()
+	{
+
+		float x0 = centrePos.x - ((float)mapX / 2.0f);
+		Debug.Log(x0);
+		float y0 = centrePos.y - ((float)mapY / 2.0f);
+		Debug.Log(y0);
+		float z0 = centrePos.z - ((float)mapZ / 2.0f);
+		Debug.Log(z0);
+
+		float x1 = centrePos.x + ((float)mapX / 2.0f);
+		Debug.Log(x1);
+		float y1 = centrePos.y + ((float)mapY / 2.0f);
+		Debug.Log(y1);
+		float z1 = centrePos.z + ((float)mapZ / 2.0f);
+		Debug.Log(z1);
+
+
+
+		for (int x = 0; x < mapX; x++)
+		{
+			float xpos = x0 + x;
+			
+			//bottom
+			Vector3 start = new Vector3(xpos, y0, z0);
+			Debug.Log("start: " + start);
+			Vector3 end = new Vector3(xpos, y0, z1);
+			Debug.Log("end: " + end);
+			Debug.DrawLine(start, end);
+
+			//top
+			start = new Vector3(xpos, y1, z0);
+			end = new Vector3(xpos, y1, z1);
+			Debug.DrawLine(start, end);
+		}
+
+		for (int y = 0; y < mapY; y++)
+		{
+			float ypos = y0 + y;
+			//front
+			Vector3 start = new Vector3(x0, ypos, z0);
+			Vector3 end = new Vector3(x1, ypos, z0);
+			Debug.DrawLine(start, end);
+
+			//back
+			start = new Vector3(x0, ypos, z1);
+			end = new Vector3(x1, ypos, z1);
+			Debug.DrawLine(start, end);
+
+			//left
+			start = new Vector3(x0, ypos, z0);
+			end = new Vector3(x0, ypos, z1);
+			Debug.DrawLine(start, end);
+
+			//right
+			start = new Vector3(x1, ypos, z0);
+			end = new Vector3(x1, ypos, z1);
+			Debug.DrawLine(start, end);
+		}
+	}
 }

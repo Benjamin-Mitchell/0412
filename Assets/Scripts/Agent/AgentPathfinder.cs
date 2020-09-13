@@ -11,14 +11,15 @@ public class AgentPathfinder : MonoBehaviour
     public float moveSpeed = 1.0f;
 
     //How often should the path information be reset (in seconds)
-    public float pathUpdateStep;
+    float pathUpdateStep = 3.0f;
 
-    private float actionTime = .0f;
+	private float actionTime;
 
     // Start is called before the first frame update
     void Awake()
     {
         pathFinder = GameObject.FindGameObjectWithTag("PathFinder").GetComponent<Pathfinder>();
+		actionTime = pathUpdateStep;
     }
 
     // Update is called once per frame
@@ -43,6 +44,7 @@ public class AgentPathfinder : MonoBehaviour
         //do a ray-cast first, this is more optimal if possible.
         if (Physics.Raycast(transform.position, target.transform.position - transform.position, out RaycastHit hit))
         {
+			Debug.DrawRay(transform.position, target.transform.position);
             // target is in direct vision
             if (hit.collider.gameObject == target)
             {
@@ -55,19 +57,34 @@ public class AgentPathfinder : MonoBehaviour
         //continue to update position to follow target
         if (actionTime < pathUpdateStep)
         {
-            return;
+			return;
         }
+		float t = Time.time * 1000;
 
         // raycase failed, do 3d A*.
         NullifyPath();
 
+		float t2 = Time.time * 1000;
+		Debug.Log("took " + (t2 - t)  +" milliseconds to nullify path");
+
         path = pathFinder.requestPath(transform.position, target.transform.position);
 
-        if (path == null)
+		Debug.Log("took " + (t2 - t) + " milliseconds to find new path");
+		Debug.Log("took " + ((Time.time * 1000) - t) + " milliseconds total");
+
+		Debug.Log("------------------------------------");
+		Debug.Log("------------------------------------");
+		Debug.Log("------------------------------------");
+
+
+		if (path == null)
         {
+			Debug.Log("Slow thing is happening here, bad!");
             path = new List<Vector3>();
             return;
         }
+
+		actionTime = 0;
     }
 
     public void SetSingleNodePath(Vector3 target)

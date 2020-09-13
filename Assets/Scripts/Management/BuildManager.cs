@@ -7,7 +7,7 @@ public class BuildManager : MonoBehaviour
 	public List<Base> allBases = new List<Base>();
 
 	public bool building = false;
-    GameObject beingBuilt;
+	GameObject beingBuilt;
     Base beingBuiltBaseComp;
 
     [SerializeField]
@@ -89,7 +89,7 @@ public class BuildManager : MonoBehaviour
 
     void DefaultPlayLoop()
     {
-        if (building)
+		if (building)
         {
             bool hit = false;
             beingBuilt.transform.Rotate(new Vector3(0.2f, 0.2f, 0.0f));
@@ -112,10 +112,8 @@ public class BuildManager : MonoBehaviour
                 if (Input.GetMouseButtonDown(0))
                 {
 #endif
-
-                    _UIManager.enableConfirmUI(FinishBuild);
+					_UIManager.enableConfirmUI(FinishBuild);
                     pickedBuildTarget = true;
-                    //TODO: some text to display how to rotate?
 #if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
                 }
 #endif
@@ -218,6 +216,10 @@ public class BuildManager : MonoBehaviour
         referanceBase = refBase;
 
 		building = true;
+
+
+		//Reset input to prevent current mouse down from triggering next build stage. 
+		Input.ResetInputAxes();
     }
 
     public void StopBuild()

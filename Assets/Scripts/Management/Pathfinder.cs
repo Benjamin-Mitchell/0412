@@ -480,18 +480,12 @@ public class Pathfinder : MonoBehaviour
 	{
 
 		float x0 = centrePos.x - ((float)mapX / 2.0f);
-		Debug.Log(x0);
 		float y0 = centrePos.y - ((float)mapY / 2.0f);
-		Debug.Log(y0);
 		float z0 = centrePos.z - ((float)mapZ / 2.0f);
-		Debug.Log(z0);
 
 		float x1 = centrePos.x + ((float)mapX / 2.0f);
-		Debug.Log(x1);
 		float y1 = centrePos.y + ((float)mapY / 2.0f);
-		Debug.Log(y1);
 		float z1 = centrePos.z + ((float)mapZ / 2.0f);
-		Debug.Log(z1);
 
 
 
@@ -501,10 +495,7 @@ public class Pathfinder : MonoBehaviour
 			
 			//bottom
 			Vector3 start = new Vector3(xpos, y0, z0);
-			Debug.Log("start: " + start);
 			Vector3 end = new Vector3(xpos, y0, z1);
-			Debug.Log("end: " + end);
-			Debug.DrawLine(start, end);
 
 			//top
 			start = new Vector3(xpos, y1, z0);

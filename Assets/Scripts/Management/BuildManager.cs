@@ -59,7 +59,7 @@ public class BuildManager : MonoBehaviour
 
     public void BeginIntroBuild()
     {
-        Vector3 defaultStartPosition = new Vector3(10.0f, 10.0f, 10.0f);
+        Vector3 defaultStartPosition = new Vector3(gameManager.mapX / 2.0f, gameManager.mapY / 2.0f, gameManager.mapZ / 2.0f);
         beingBuilt = Instantiate(assetToBuild, defaultStartPosition, Quaternion.identity);
 		allBases.Add(beingBuilt.GetComponent<Base>());
 

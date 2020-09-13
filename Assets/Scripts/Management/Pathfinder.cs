@@ -82,9 +82,9 @@ public class Pathfinder : MonoBehaviour
     {
         Node fromNode = ReturnNodeFromVector3(from);
 
-        int X = GameManager.Instance.mapX;
-        int Y = GameManager.Instance.mapY;
-        int Z = GameManager.Instance.mapZ;
+        int X = mapX;
+        int Y = mapY;
+        int Z = mapZ;
 
 
         if (to.x > X || to.x < .0f
@@ -139,12 +139,19 @@ public class Pathfinder : MonoBehaviour
             // check neighbours
             for (int x = -1; x < 2; x++)
             {
+				if (current.intVec3.x + x < 0 || current.intVec3.x + x >= mapX)	// do these checks early in the loop to ensure we don't waste time checking an entire row of null neighbours
+					continue;
                 for (int y = -1; y < 2; y++)
                 {
-                    for (int z = -1; z < 2; z++)
+					if (current.intVec3.y + y < 0 || current.intVec3.y + y >= mapY)
+						continue;
+					for (int z = -1; z < 2; z++)
                     {
-                        
-                        Node neighbour = null;
+						if (current.intVec3.z + z < 0 || current.intVec3.z + z >= mapZ)
+							continue;
+
+
+						Node neighbour = null;
                         // check its a valid neighbour
                         neighbour = CheckNeighbourValidity(x, y, z, current);
 
@@ -207,7 +214,6 @@ public class Pathfinder : MonoBehaviour
     
     Node CheckNeighbourValidity(int x, int y, int z, Node current)
     {
-        Node neighbour;
         // skip current node
         if (x == 0 && y == 0 && z == 0)
             return null;
@@ -217,22 +223,14 @@ public class Pathfinder : MonoBehaviour
         int newNodeY = current.intVec3.y + y;
         int newNodeZ = current.intVec3.z + z;
 
-        // don't add off-screen nodes
-        if (newNodeX < 0 || newNodeY < 0 || newNodeZ < 0 ||
-                newNodeX >= mapX ||
-                newNodeY >= mapY ||
-                newNodeZ >= mapZ)
-            return null;
-
         // don't add occupied nodes
         if (grid[newNodeX, newNodeY, newNodeZ].occupied)
             return null;
 
-        neighbour = grid[newNodeX, newNodeY, newNodeZ];
-        if (neighbour.visited)
+        if (grid[newNodeX, newNodeY, newNodeZ].visited)
             return null;
 
-        return neighbour;
+        return grid[newNodeX, newNodeY, newNodeZ];
     }
 
     void AddToOpenSet(bool inOpen, Node neighbour, float f, float g, float h, Node current)

@@ -41,40 +41,32 @@ public class AgentPathfinder : MonoBehaviour
 
     public void SetPath(GameObject target)
     {
-        //do a ray-cast first, this is more optimal if possible.
-        if (Physics.Raycast(transform.position, target.transform.position - transform.position, out RaycastHit hit))
-        {
-			Debug.DrawRay(transform.position, target.transform.position);
-            // target is in direct vision
-            if (hit.collider.gameObject == target)
-            {
-                actionTime = pathUpdateStep;
-                SetSingleNodePath(target.transform.position);
-                return;
-            }
-        }
-
-        //continue to update position to follow target
-        if (actionTime < pathUpdateStep)
-        {
-			return;
-        }
-		float t = Time.time * 1000;
+        ////do a ray-cast first, this is more optimal if possible.
+        //if (Physics.Raycast(transform.position, target.transform.position - transform.position, out RaycastHit hit))
+        //{
+		//	Debug.DrawRay(transform.position, target.transform.position);
+        //    // target is in direct vision
+        //    if (hit.collider.gameObject == target)
+        //    {
+        //        actionTime = pathUpdateStep;
+        //        SetSingleNodePath(target.transform.position);
+        //        return;
+        //    }
+        //}
+		//
+        ////continue to update position to follow target
+        //if (actionTime < pathUpdateStep)
+        //{
+		//	return;
+        //}
+		//float t = Time.time * 1000;
 
         // raycase failed, do 3d A*.
         NullifyPath();
 
 		float t2 = Time.time * 1000;
-		Debug.Log("took " + (t2 - t)  +" milliseconds to nullify path");
 
         path = pathFinder.requestPath(transform.position, target.transform.position);
-
-		Debug.Log("took " + (t2 - t) + " milliseconds to find new path");
-		Debug.Log("took " + ((Time.time * 1000) - t) + " milliseconds total");
-
-		Debug.Log("------------------------------------");
-		Debug.Log("------------------------------------");
-		Debug.Log("------------------------------------");
 
 
 		if (path == null)

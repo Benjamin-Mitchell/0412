@@ -18,9 +18,6 @@ public class Base : MonoBehaviour
     
     private List<AgentGameplay> agents = new List<AgentGameplay>();
 
-    //TODO: this should probably be held globally somewhere instead of updated for each base.
-    private List<Resource> resourcesInScene = new List<Resource>();
-
 	[SerializeField]
 	public Vector3 rotationFactor;
 
@@ -59,8 +56,6 @@ public class Base : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        UpdateAgents();
-
 		transform.Rotate(rotationFactor);
 
 
@@ -69,29 +64,6 @@ public class Base : MonoBehaviour
         {
             heldResource += 100;
         }
-    }
-
-    void UpdateAgents()
-    {
-        if (resourcesInScene.Count < 1)
-            return;
-
-        
-        for (int i = 0; i < agents.Count;i++)
-        {
-            if(agents[i].getState() == AgentGameplay.State.Idle && resourcesInScene[0].transform.position.z < GameManager.Instance.mapZ)
-            {
-                //assign free resource and assign
-                 agents[i].setResourceTarget(resourcesInScene[0]);
-                 resourcesInScene.RemoveAt(0);
-                 break;
-            }
-        }
-    }
-
-    public void grantResource(Resource r)
-    {
-        resourcesInScene.Add(r);
     }
 
     public void UpgradeBase()
@@ -115,7 +87,36 @@ public class Base : MonoBehaviour
         return val;
     }
 
-    public void addResources(int val)
+	public void AddResourcesOverTime(int val, float time)
+	{
+		float percent = 1.0f * (increasePercent / 100.0f);
+
+		float mulVal = (float)val * percent;
+
+		StartCoroutine(IncrementResourceOverTime((int)mulVal, time));
+	}
+
+	public IEnumerator IncrementResourceOverTime(int val, float time)
+	{ 
+		float sinceLastVisualUpdate = 0, timePassed = 0;
+
+		while(timePassed < time)
+		{
+			float increment = (float)val * (Time.deltaTime / time);
+
+			sinceLastVisualUpdate += increment;
+			timePassed += increment;
+
+			if(sinceLastVisualUpdate >= 1.0f)
+			{
+				heldResource += 1;
+				sinceLastVisualUpdate -= 1.0f;
+			}
+			yield return null;
+		}
+	}
+
+	public void addResources(int val)
     {
         float percent = 1.0f + (increasePercent / 100.0f);
         float fVal = (float)val * percent;

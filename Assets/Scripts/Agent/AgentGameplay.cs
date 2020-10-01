@@ -4,16 +4,23 @@ using UnityEngine;
 
 public class AgentGameplay : MonoBehaviour
 {
+	private ResourceSpawner resourceSpawner;
+
     public GameObject[] agentStages = new GameObject[5];
     public Base associatedBase;
 
-    
+	private float loadingTime = 0.0f;
+
+	[SerializeField]
+	private float timeToLoad = 1.5f;
 
     public enum State
     {
         UnderSpawnOrders,
         ChasingResource,
         ReturningResource,
+		LoadingResource,
+		UnloadingResource,
         Idle
     };
 
@@ -24,10 +31,11 @@ public class AgentGameplay : MonoBehaviour
     [SerializeField]
     private AgentPathfinder agentPathfinding;
 
-    private Resource moveToTarget;
+    private Resource resourceTarget;
     private GameObject defaultTarget;
 
-    private Resource resourceTarget;
+	private Vector3 returnPosition;
+
     //how much value am I currently carrying
     private float carryingValue;
 
@@ -41,12 +49,17 @@ public class AgentGameplay : MonoBehaviour
     private Vector3 previousPos;
 
 
+	//for unloading
+	private float sinceLastVisualUpdate = 0;
 
-    // Start is called before the first frame update
-    void Start()
+
+	// Start is called before the first frame update
+	void Start()
     {
         agentStages[currentStage].SetActive(true);
-    }
+		resourceSpawner = GameObject.FindGameObjectWithTag("ResourceSpawner").GetComponent<ResourceSpawner>();
+
+	}
 
     // Update is called once per frames
     void Update()
@@ -59,7 +72,7 @@ public class AgentGameplay : MonoBehaviour
         switch(state)
         {
             case State.UnderSpawnOrders:
-                //is this overcomplicated currently?
+                //is this overcomplicated?
                 if (Vector3.Distance(transform.position, defaultTarget.transform.position) < 0.1f)
                 {
                     agentPathfinding.NullifyPath();
@@ -73,53 +86,125 @@ public class AgentGameplay : MonoBehaviour
                 
 
                 // TODO: need to modify distance to resource beforce collecting it
-                if (Vector3.Distance(transform.position, moveToTarget.transform.position) < 0.3f)
+                if (Vector3.Distance(transform.position, resourceTarget.transform.position) < 0.3f)
                 {
-                    //TODO: An idle moment or two here (maybe an animation?) would be really cool.
                     // Get Resource
                     carryingValue = resourceTarget.value;
-                
-                    Destroy(resourceTarget.gameObject);
-                    state = State.ReturningResource;
-                    break;
+					
+					BeginLoading();
+					break;
                 }
 
-                agentPathfinding.SetPath(moveToTarget.gameObject);
+                agentPathfinding.SetPath(resourceTarget.gameObject);
 
                 break;
             case State.ReturningResource:
 
-                if (Vector3.Distance(transform.position, defaultTarget.transform.position) < 0.05f)
+				if (Vector3.Distance(transform.position, returnPosition) < 0.2f)
                 {
-                    associatedBase.addResources((int)carryingValue);
-                    carryingValue = .0f;
-                    state = State.Idle;
+					BeginUnloading();
                     break;
                 }
 
-                agentPathfinding.SetPath(defaultTarget);     
+                //agentPathfinding.SetPath(defaultTarget);     
 
                 break;
-            case State.Idle:
-                
-                //chill out
+			case State.LoadingResource:
 
-                //Movement
-                //transform.RotateAround(associatedBase.gameObject.transform.position, axis, orbitRotationSpeed * Time.deltaTime);
-                //Vector3 orbitDesiredPosition = (transform.position - associatedBase.gameObject.transform.position).normalized * radius + associatedBase.gameObject.transform.position;
-                //transform.position = Vector3.Slerp(transform.position, orbitDesiredPosition, Time.deltaTime * radiusCorrectionSpeed);
-                //
-                ////Rotation
-                //Vector3 relativePos = transform.position - previousPos;
-                //Quaternion rotation = Quaternion.LookRotation(relativePos);
-                //transform.rotation = Quaternion.Slerp(transform.rotation, rotation, radiusCorrectionSpeed * Time.deltaTime);
-                //previousPos = transform.position;
+				if (loadingTime > timeToLoad && agentPathfinding.hasPath)
+				{
+					loadingTime = .0f;
+					Destroy(resourceTarget.gameObject);
+					state = State.ReturningResource;
+					agentPathfinding.AllowPathTraversal(true);
+					break;
+				}
+
+				loadingTime += Time.deltaTime;
+
+				break;
+			case State.UnloadingResource:
+
+				
+				//how much has been uploaded since we last updated the base's value
+				float increment = carryingValue * (Time.deltaTime / timeToLoad);
+				sinceLastVisualUpdate += increment;
+
+				if (sinceLastVisualUpdate > 1.0f)
+				{
+					sinceLastVisualUpdate -= 1.0f;
+					associatedBase.addResources(1);
+				}
+
+				loadingTime += Time.deltaTime;
+				
+
+				if (loadingTime > timeToLoad && agentPathfinding.hasPath)
+				{
+					agentPathfinding.AllowPathTraversal(true);
+					loadingTime = .0f;
+					carryingValue = .0f;
+					state = State.Idle;
+					break;
+				}
+
+				break;
+			case State.Idle:
+
+				//check for resources
+				if (resourceTarget != null)
+				{
+					agentPathfinding.SetPath(resourceTarget.gameObject);
+
+					if (agentPathfinding.hasPath)
+					{
+						state = State.ChasingResource;
+					}
+				}					
+				else
+					resourceTarget = resourceSpawner.RequestResource();
 
 
-                break;
+
+				//chill out
+
+				//Movement
+				//transform.RotateAround(associatedBase.gameObject.transform.position, axis, orbitRotationSpeed * Time.deltaTime);
+				//Vector3 orbitDesiredPosition = (transform.position - associatedBase.gameObject.transform.position).normalized * radius + associatedBase.gameObject.transform.position;
+				//transform.position = Vector3.Slerp(transform.position, orbitDesiredPosition, Time.deltaTime * radiusCorrectionSpeed);
+				//
+				////Rotation
+				//Vector3 relativePos = transform.position - previousPos;
+				//Quaternion rotation = Quaternion.LookRotation(relativePos);
+				//transform.rotation = Quaternion.Slerp(transform.rotation, rotation, radiusCorrectionSpeed * Time.deltaTime);
+				//previousPos = transform.position;
+
+
+				break;
 
         }
     }
+
+	private void BeginLoading()
+	{
+		agentPathfinding.SetPath(defaultTarget);
+		returnPosition = defaultTarget.transform.position;
+		state = State.LoadingResource;
+		agentPathfinding.AllowPathTraversal(false);
+	}
+
+	private void BeginUnloading()
+	{
+		//check here too
+		resourceTarget = resourceSpawner.RequestResource();
+
+		if (resourceTarget != null)
+			agentPathfinding.SetPath(resourceTarget.gameObject);
+
+
+		state = State.UnloadingResource;
+		agentPathfinding.AllowPathTraversal(false);
+	}
 
     public State getState()
     {
@@ -142,16 +227,5 @@ public class AgentGameplay : MonoBehaviour
         agentStages[currentStage].SetActive(false);
         currentStage = stage;
         agentStages[currentStage].SetActive(true);
-    }
-
-    public void setResourceTarget(Resource resource)
-    {
-        // make sure a movement check is done immediately with new target
-        agentPathfinding.orderImmediateMovement();
-
-
-        resourceTarget = resource;
-        moveToTarget = resourceTarget;
-        state = State.ChasingResource;
     }
 }

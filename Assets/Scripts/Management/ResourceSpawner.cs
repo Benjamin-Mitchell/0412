@@ -14,15 +14,15 @@ public class ResourceSpawner : MonoBehaviour
 
 	public BuildManager buildManager;
 
-    int baseTicker = 0;
-
     float spawnTimer = .0f;
     float nextSpawnTime = .0f;
 
     float minSpawnTime, maxSpawnTime;
-        
-    // Start is called before the first frame update
-    void Start()
+
+	private List<Resource> availableResources = new List<Resource>();
+
+	// Start is called before the first frame update
+	void Start()
     {
         minSpawnTime = spawnRate - ((spawnRateVariation/100.0f)*spawnRate);
         maxSpawnTime = spawnRate + ((spawnRateVariation/100.0f)*spawnRate);
@@ -59,15 +59,23 @@ public class ResourceSpawner : MonoBehaviour
             Random.Range(.0f, (float)GameManager.Instance.mapX),
             Random.Range(.0f, (float)GameManager.Instance.mapY), 
             (float)GameManager.Instance.mapZ);
-
-        //don't currently track the resource
+		
         Resource r = Instantiate(resources[Random.Range(0, resources.Count)], spawnPos, Quaternion.identity).GetComponent<Resource>();
 
-		//rotationally grant resources
-		buildManager.allBases[baseTicker].grantResource(r);
-        baseTicker++;
-
-        if (baseTicker >= buildManager.allBases.Count)
-            baseTicker = 0;
+		availableResources.Add(r);
     }
+
+	public Resource RequestResource()
+	{
+		Resource r;
+
+		if (availableResources.Count == 0)
+			return null;
+
+		//TODO: make this return nearest resource instead of "first"? or some other smart allocation...
+		r = availableResources[0];
+		availableResources.RemoveAt(0);
+
+		return r;
+	}
 }

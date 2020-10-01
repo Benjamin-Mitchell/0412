@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading;
 
 
 //Aim of this class:
@@ -9,10 +10,22 @@ using UnityEngine;
 // Initial implementation only works for uniform size colliders (cube, sphere etc)
 public class Pathfinder : MonoBehaviour
 {
+	struct PathfindResult
+	{
+		public AgentPathfinder agent;
+		public List<Vector3> path;
+
+		public PathfindResult(AgentPathfinder agent, List<Vector3> path)
+		{
+			this.agent = agent;
+			this.path = path;
+		}
+	}
+	Queue<PathfindResult> results = new Queue<PathfindResult>();
     /// <summary>
     ///  Grid Bits
     /// </summary>
-    class Node
+    public class Node
     {
         public struct IntVector3
         {
@@ -68,6 +81,7 @@ public class Pathfinder : MonoBehaviour
     Node[,,] grid;
 
     //pre-initialize lists, to remove GC overhead.
+	//TODO: sync me across threads!!
     List<Node> open;
     List<Node> returnNodes;
     List<Node> neighbours;
@@ -78,7 +92,7 @@ public class Pathfinder : MonoBehaviour
     /// </summary>
 
 
-    public List<Vector3> requestPath(Vector3 from, Vector3 to)
+    public void requestPath(Vector3 from, Vector3 to, AgentPathfinder agent)
     {
         Node fromNode = ReturnNodeFromVector3(from);
 
@@ -92,44 +106,60 @@ public class Pathfinder : MonoBehaviour
             || to.z > Z || to.z < .0f)
         {
             Debug.Log("Demanded an out of range vector destination!");
-            return null;
+			PathfindResult result;
+			result.agent = agent;
+			return;
         }
 
         Node toNode = ReturnNodeFromVector3(to);
 
+		Thread t = new Thread(() => FindPath(fromNode, toNode, to, agent));
+		t.Start();
 
-        List<Node> nodePath = FindPath(fromNode, toNode);
-
-        if (nodePath == null)
-            return null;
-
-        vector3Path.Clear();
-        
-
-        //invert path and convert to Vector3
-        // i > 0 as we don't want to add last one, see below comment
-        for(int i = nodePath.Count - 1; i > 0; i--)
-        {
-            vector3Path.Add(nodePath[i].pos);
-        }
-
-        //last one should be exact position, not node position.
-        vector3Path.Add(to);
-
-        return vector3Path;
+		//ThreadStart threadStart = delegate
+		//{
+		//	FindPath(fromNode, toNode, to, agent);
+		//};
     }
-    
+
+	public void PathFound(List<Node> nodePath, AgentPathfinder agent, Vector3 to)
+	{
+		if (nodePath == null)
+		{
+			PathfindResult result = new PathfindResult(agent, null);
+			lock(results){ results.Enqueue(result); }
+			return;
+		}
+
+		vector3Path.Clear();
+		
+		//invert path and convert to Vector3
+		// i > 0 as we don't want to add last one, see below comment 
+		for (int i = nodePath.Count - 1; i > 0; i--)
+		{
+			vector3Path.Add(nodePath[i].pos);
+		}
+		
+		//last one should be exact position, not node position.
+		vector3Path.Add(to);
+
+		PathfindResult successfulResult = new PathfindResult(agent, vector3Path);
+		lock (results) { results.Enqueue(successfulResult); }
+	}
 
     //This function is broken up to allow for easier profiling with Unity tools.
-    List<Node> FindPath(Node from, Node to)
+    void FindPath(Node from, Node to, Vector3 finalTo, AgentPathfinder agent)
     {
         Node current = FindPathInit(from);
 
         while (open.Count > 0)
         {
             current.f = current.g = current.h = 0;
-            if (CheckReached(current, to))
-                return returnNodes;
+			if (CheckReached(current, to))
+			{
+				PathFound(returnNodes, agent, finalTo);
+				return;
+			}
 
             current = open[0];
             open.Remove(current);
@@ -175,8 +205,8 @@ public class Pathfinder : MonoBehaviour
 
 
         Debug.Log("WARNING: Destination could not be found for path find!!");
-        return null;
-    }
+		PathFound(null, agent, finalTo);
+	}
 
     Node FindPathInit(Node from)
     {
@@ -338,6 +368,16 @@ public class Pathfinder : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+		//update objects when a thread has finished processing their path.
+		lock (results)
+		{
+			while(results.Count > 0)
+			{
+				PathfindResult res = results.Dequeue();
+				res.agent.NotifyPathAvailable(res.path);
+			}
+		}
+
 #if UNITY_EDITOR
 		drawOuterGrid();
 #endif

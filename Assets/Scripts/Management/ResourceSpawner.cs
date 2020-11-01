@@ -21,15 +21,19 @@ public class ResourceSpawner : MonoBehaviour
 
 	private List<Resource> availableResources = new List<Resource>();
 
+	private GameManager gameManager;
+
 	// Start is called before the first frame update
 	void Start()
     {
-        minSpawnTime = spawnRate - ((spawnRateVariation/100.0f)*spawnRate);
+		gameManager = GameManager.Instance;
+
+		minSpawnTime = spawnRate - ((spawnRateVariation/100.0f)*spawnRate);
         maxSpawnTime = spawnRate + ((spawnRateVariation/100.0f)*spawnRate);
 
 
-        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime);
-    }
+        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime) / gameManager.GetResourceSpawnRate();
+	}
 
     // Update is called once per frame
     void Update()

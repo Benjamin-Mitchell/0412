@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     [SerializeField]
-    GameObject UI_object;
+    GameObject baseUI;
 
     [SerializeField]
     Image resourceImage;
@@ -39,27 +39,42 @@ public class UIManager : MonoBehaviour
 	GameObject revertUI;
 
     [SerializeField]
-    GameObject BuildNewUI;
+    GameObject buildNewUI;
 
     [SerializeField]
-    GameObject HammerUI;
+    GameObject hammerUI;
 
-    public delegate void ConfirmDelegate();
+	[SerializeField]
+	GameObject buyUI;
+
+	[SerializeField]
+	GameObject dollarUI;
+
+	[SerializeField]
+	Text spawnRateUpgradeText, resourceValueUpgradeText, unitReturnRateUpgradeText;
+
+	public delegate void ConfirmDelegate();
     public ConfirmDelegate confirm;
 
 	public delegate void RevertDelegate();
 	public RevertDelegate revert;
 
-	float baseResource = 0;
-    float baseReqToUpdate = 0;
-    bool fullyUpgraded = false;
-    Base baseRef = null;
+	private float baseResource = 0;
+    private float baseReqToUpdate = 0;
+    private bool fullyUpgraded = false;
+    private Base baseRef = null;
+
+	private GameManager gameManager;
 
     // Start is called before the first frame update
     void Start()
     {
+		gameManager = GameManager.Instance;
+		spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.GetResourceSpawnRate() + "\nUpgrade (" + gameManager.spawnRateIncreaseCost + " U)";
+		resourceValueUpgradeText.text = "Resource Value Multiplier: " + gameManager.GetResourceValueMultiplier() + "\nUpgrade (" + gameManager.resourceValueIncreaseCost + " U)";
+		unitReturnRateUpgradeText.text = "Unit Return Rate: " + gameManager.GetUnitReturnRate() + "\nUpgrade (" + gameManager.unitReturnIncreaseCost + " U)";
 
-    }
+	}
 
     // Update is called once per frame
     void Update()
@@ -154,7 +169,7 @@ public class UIManager : MonoBehaviour
     {
         baseRef = b;
         RecalculateBuildReq();
-        UI_object.SetActive(true);
+		baseUI.SetActive(true);
         fullyUpgraded = baseRef.IsFullyUpgraded();
     }
 
@@ -162,7 +177,7 @@ public class UIManager : MonoBehaviour
     {
 		revertUI.SetActive(false);
 		confirmUI.SetActive(false);
-		UI_object.SetActive(false);
+		baseUI.SetActive(false);
         fullyUpgraded = false;
     }
 
@@ -189,8 +204,8 @@ public class UIManager : MonoBehaviour
 
         RecalculateBuildReq();
 
-        // disable UI (except return arrow).
-        UI_object.SetActive(false);
+		// disable UI (except return arrow).
+		baseUI.SetActive(false);
 
 		//enable return arrow, add functions to revert delegate
 		RevertDelegate revertable = DefaultStateBaseUIEnabled;
@@ -209,37 +224,78 @@ public class UIManager : MonoBehaviour
 
     public void DefaultState()
     {
+		DisableBuildUI();
+		DisableBuyUI();
         revertUI.SetActive(false);
 		confirmUI.SetActive(false);
-		BuildNewUI.SetActive(false);
-        UI_object.SetActive(false);
+		buildNewUI.SetActive(false);
+		baseUI.SetActive(false);
     }
 
 	public void DefaultStatebuildEnabled()
 	{
 		DefaultState();
-		BuildNewUI.SetActive(true);
+		buildNewUI.SetActive(true);
 	}
 
 	public void DefaultStateBaseUIEnabled()
 	{
 		DefaultState();
-		UI_object.SetActive(true);
+		baseUI.SetActive(true);
 	}
 
 	public void EnableBuildUI()
     {
-        BuildNewUI.SetActive(true);
-        HammerUI.SetActive(false);
+		DefaultState();
+		buildNewUI.SetActive(true);
+        hammerUI.SetActive(false);
     }
 
     public void DisableBuildUI()
     {
-        BuildNewUI.SetActive(false);
-        HammerUI.SetActive(true);
+        buildNewUI.SetActive(false);
+        hammerUI.SetActive(true);
     }
 
-    private void RecalculateBuildReq()
+	public void EnableBuyUI()
+	{
+		DefaultState();
+		buyUI.SetActive(true);
+		dollarUI.SetActive(false);
+	}
+
+	public void DisableBuyUI()
+	{
+		
+		buyUI.SetActive(false);
+		dollarUI.SetActive(true);
+	}
+
+	public void SpawnRateIncrement()
+	{
+		if(gameManager.IncrementSpawnRate())
+		{
+			spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.GetResourceSpawnRate() + "\nUpgrade (" + gameManager.spawnRateIncreaseCost + " U)";
+		}
+	}
+
+	public void ResourceValueIncrement()
+	{
+		if (gameManager.IncrementValueMultiplier())
+		{
+			resourceValueUpgradeText.text = "Resource Value Multiplier: " + gameManager.GetResourceValueMultiplier() + "\nUpgrade (" + gameManager.resourceValueIncreaseCost + " U)";
+		}
+	}
+
+	public void UnitReturnRateIncrement()
+	{
+		if (gameManager.IncrementUnitReturn())
+		{
+			unitReturnRateUpgradeText.text = "Unit Return Rate: " + gameManager.GetUnitReturnRate() + "\nUpgrade (" + gameManager.unitReturnIncreaseCost + " U)";
+		}
+	}
+
+	private void RecalculateBuildReq()
     {
 		baseRef.reqToBuild = (int)Mathf.Pow((int)Mathf.Pow((float)baseRef.reqToUpgrade, 1.2f), (int)Mathf.Pow((float)(baseRef.numBuilds + 1), 1.2f));
     }

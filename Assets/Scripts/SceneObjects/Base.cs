@@ -31,6 +31,8 @@ public class Base : MonoBehaviour
 
 	private List<AgentGameplay> agents = new List<AgentGameplay>();
 
+	private GameManager gameManager;
+
     private void Awake()
     {
         GameObject spherePrefab = (GameObject)Resources.Load("BuildSphere", typeof(GameObject));
@@ -51,6 +53,8 @@ public class Base : MonoBehaviour
         agents.Add(agent);
 
         reqToUpgrade = requiredToUpgrade();
+
+		gameManager = GameManager.Instance;
 	}
 
     // Update is called once per frame
@@ -89,7 +93,7 @@ public class Base : MonoBehaviour
 
 	public void AddResourcesOverTime(float val, float time)
 	{
-		float percent = 1.0f + (increasePercent / 100.0f);
+		float percent = (1.0f + (increasePercent / 100.0f)) * gameManager.GetResourceValueMultiplier();
 
 		float mulVal = val * percent;
 
@@ -109,6 +113,7 @@ public class Base : MonoBehaviour
 			if(sinceLastVisualUpdate >= 1.0f)
 			{
 				heldResource += 1;
+				gameManager.AddUnits(1);
 				sinceLastVisualUpdate -= 1.0f;
 			}
 			yield return null;

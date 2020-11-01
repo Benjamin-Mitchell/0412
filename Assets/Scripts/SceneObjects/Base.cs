@@ -15,8 +15,6 @@ public class Base : MonoBehaviour
     
     public int stage = 0;
     public int numBuilds = 0;
-    
-    private List<AgentGameplay> agents = new List<AgentGameplay>();
 
 	[SerializeField]
 	public Vector3 rotationFactor;
@@ -30,6 +28,8 @@ public class Base : MonoBehaviour
     public GameObject agentDefaultTarget;
 
     public GameObject buildSphere;
+
+	private List<AgentGameplay> agents = new List<AgentGameplay>();
 
     private void Awake()
     {
@@ -51,7 +51,7 @@ public class Base : MonoBehaviour
         agents.Add(agent);
 
         reqToUpgrade = requiredToUpgrade();
-    }
+	}
 
     // Update is called once per frame
     void Update()
@@ -87,25 +87,24 @@ public class Base : MonoBehaviour
         return val;
     }
 
-	public void AddResourcesOverTime(int val, float time)
+	public void AddResourcesOverTime(float val, float time)
 	{
-		float percent = 1.0f * (increasePercent / 100.0f);
+		float percent = 1.0f + (increasePercent / 100.0f);
 
-		float mulVal = (float)val * percent;
+		float mulVal = val * percent;
 
-		StartCoroutine(IncrementResourceOverTime((int)mulVal, time));
+		StartCoroutine(IncrementResourceOverTime(mulVal, time));
 	}
 
-	public IEnumerator IncrementResourceOverTime(int val, float time)
-	{ 
+	public IEnumerator IncrementResourceOverTime(float val, float time)
+	{
 		float sinceLastVisualUpdate = 0, timePassed = 0;
 
-		while(timePassed < time)
+		while (timePassed < time)
 		{
-			float increment = (float)val * (Time.deltaTime / time);
-
+			float increment = val * (Time.deltaTime / time);
 			sinceLastVisualUpdate += increment;
-			timePassed += increment;
+			timePassed += Time.deltaTime;
 
 			if(sinceLastVisualUpdate >= 1.0f)
 			{

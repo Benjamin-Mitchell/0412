@@ -191,11 +191,9 @@ public class Pathfinder : MonoBehaviour
                         float g = neighbour.g + nodeSize;
                         float h = manhattanHeuristic(neighbour, to);
                         float f = g + h;
-
-                        //float b = Time.realtimeSinceStartup;
+						
                         bool inOpen = neighbour.open;
-
-                        //float c = Time.realtimeSinceStartup;
+						
                         AddToOpenSet(inOpen, neighbour, f, g, h, current);
 
                     }

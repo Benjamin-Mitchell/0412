@@ -124,18 +124,6 @@ public class AgentGameplay : MonoBehaviour
 
 				break;
 			case State.UnloadingResource:
-
-				
-				//how much has been uploaded since we last updated the base's value
-				float increment = carryingValue * (Time.deltaTime / timeToLoad);
-				sinceLastVisualUpdate += increment;
-
-				if (sinceLastVisualUpdate > 1.0f)
-				{
-					sinceLastVisualUpdate -= 1.0f;
-					associatedBase.addResources(1);
-				}
-
 				loadingTime += Time.deltaTime;
 				
 
@@ -189,6 +177,7 @@ public class AgentGameplay : MonoBehaviour
 	{
 		agentPathfinding.SetPath(defaultTarget);
 		returnPosition = defaultTarget.transform.position;
+		resourceTarget.consume();
 		state = State.LoadingResource;
 		agentPathfinding.AllowPathTraversal(false);
 	}
@@ -201,6 +190,7 @@ public class AgentGameplay : MonoBehaviour
 		if (resourceTarget != null)
 			agentPathfinding.SetPath(resourceTarget.gameObject);
 
+		associatedBase.AddResourcesOverTime(carryingValue, timeToLoad);
 
 		state = State.UnloadingResource;
 		agentPathfinding.AllowPathTraversal(false);

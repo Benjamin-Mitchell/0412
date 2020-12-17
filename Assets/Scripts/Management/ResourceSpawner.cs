@@ -75,7 +75,7 @@ public class ResourceSpawner : MonoBehaviour
 
 		if (availableResources.Count == 0)
 			return null;
-
+		
 		//TODO: make this return nearest resource instead of "first"? or some other smart allocation...
 		r = availableResources[0];
 		availableResources.RemoveAt(0);

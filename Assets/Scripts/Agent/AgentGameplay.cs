@@ -27,13 +27,14 @@ public class AgentGameplay : MonoBehaviour
     private State state = State.Idle;
 
     int currentStage = 0;
-
-    [SerializeField]
+	
     private AgentPathfinder agentPathfinding;
 
     private Resource resourceTarget;
     private GameObject defaultTarget;
 
+	// using defaultTarget will copy by reference (latest position of the target)
+	// returnPosition will copy the value out
 	private Vector3 returnPosition;
 
     //how much value am I currently carrying
@@ -48,11 +49,10 @@ public class AgentGameplay : MonoBehaviour
     private float radiusCorrectionSpeed = 0.5f;
     private Vector3 previousPos;
 
-
-	//for unloading
-	private float sinceLastVisualUpdate = 0;
-
-
+	private void Awake()
+	{
+		agentPathfinding = gameObject.GetComponent<AgentPathfinder>();
+	}
 	// Start is called before the first frame update
 	void Start()
     {
@@ -64,6 +64,8 @@ public class AgentGameplay : MonoBehaviour
     // Update is called once per frames
     void Update()
     {
+		if(Input.GetKey(KeyCode.Q))
+			Debug.Log(gameObject.name +"'s Current State: " + state);
         UpdateState();
     }
     
@@ -72,8 +74,8 @@ public class AgentGameplay : MonoBehaviour
         switch(state)
         {
             case State.UnderSpawnOrders:
-                //is this overcomplicated?
-                if (Vector3.Distance(transform.position, defaultTarget.transform.position) < 0.1f)
+				//is this overcomplicated?
+				if (Vector3.Distance(transform.position, returnPosition) < 0.1f)
                 {
                     agentPathfinding.NullifyPath();
                     state = State.Idle;
@@ -106,7 +108,7 @@ public class AgentGameplay : MonoBehaviour
                     break;
                 }
 
-                //agentPathfinding.SetPath(defaultTarget);     
+                agentPathfinding.SetPath(returnPosition);     
 
                 break;
 			case State.LoadingResource:
@@ -125,7 +127,6 @@ public class AgentGameplay : MonoBehaviour
 				break;
 			case State.UnloadingResource:
 				loadingTime += Time.deltaTime;
-				
 
 				if (loadingTime > timeToLoad && agentPathfinding.hasPath)
 				{
@@ -135,6 +136,9 @@ public class AgentGameplay : MonoBehaviour
 					state = State.Idle;
 					break;
 				}
+
+				if(resourceTarget == null)
+					resourceTarget = resourceSpawner.RequestResource();
 
 				break;
 			case State.Idle:
@@ -148,10 +152,11 @@ public class AgentGameplay : MonoBehaviour
 					{
 						state = State.ChasingResource;
 					}
-				}					
+				}
 				else
+				{
 					resourceTarget = resourceSpawner.RequestResource();
-
+				}
 
 
 				//chill out
@@ -187,6 +192,7 @@ public class AgentGameplay : MonoBehaviour
 		//check here too
 		resourceTarget = resourceSpawner.RequestResource();
 
+
 		if (resourceTarget != null)
 			agentPathfinding.SetPath(resourceTarget.gameObject);
 
@@ -205,7 +211,8 @@ public class AgentGameplay : MonoBehaviour
     {
         associatedBase = b;
         defaultTarget = b.agentDefaultTarget;
-        agentPathfinding.SetPath(defaultTarget);
+		returnPosition = defaultTarget.transform.position;
+		agentPathfinding.SetPath(returnPosition);
         state = State.UnderSpawnOrders;
     }
 

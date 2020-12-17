@@ -23,7 +23,7 @@ public class AgentPathfinder : MonoBehaviour
 	// Start is called before the first frame update
 	void Awake()
     {
-        pathFinder = GameObject.FindGameObjectWithTag("PathFinder").GetComponent<Pathfinder>();
+        pathFinder = GetComponent<Pathfinder>();
 		actionTime = pathUpdateStep;
     }
 
@@ -51,12 +51,53 @@ public class AgentPathfinder : MonoBehaviour
 		}
     }
 
+	public void SetPath(Vector3 target)
+	{
+		//do a ray-cast first, this is more optimal if possible.
+		if (!Physics.Raycast(transform.position, target - transform.position, out RaycastHit hit))
+		{
+			Debug.DrawRay(transform.position, target - transform.position);
+			// target is in direct vision
+			if (!hit.collider || true)
+			{
+				//ray-cast hit nothing... so it has a straight path to a target with no gameobject.
+				actionTime = pathUpdateStep;
+				SetSingleNodePath(target);
+				hasPath = true;
+				return;
+			}
+		}
+
+		//only update the path ever pathUpdateStep seconds.
+		if (actionTime < pathUpdateStep)
+		{
+			return;
+		}
+
+		// raycast failed, do 3d A*.
+		NullifyPath();
+
+		//this kicks off a thread to calculate a path.
+		pathFinder.requestPath(transform.position, target, this);
+
+
+		if (path == null)
+		{
+			Debug.Log("Slow thing is happening here, bad!");
+			path = new List<Vector3>();
+			return;
+		}
+
+		actionTime = 0;
+	}
+
     public void SetPath(GameObject target)
     {
-        //do a ray-cast first, this is more optimal if possible.
-        if (Physics.Raycast(transform.position, target.transform.position - transform.position, out RaycastHit hit))
+		Debug.DrawRay(transform.position, target.transform.position - transform.position);
+		//do a ray-cast first, this is more optimal if possible. returns true if hits a collider
+		if (Physics.Raycast(transform.position, target.transform.position - transform.position, out RaycastHit hit))
         {
-			Debug.DrawRay(transform.position, target.transform.position);
+			
             // target is in direct vision
             if (hit.collider.gameObject == target)
             {
@@ -65,38 +106,33 @@ public class AgentPathfinder : MonoBehaviour
 				hasPath = true;
                 return;
             }
-			else if (!hit.collider.gameObject)
+
+			//ELSE, something else was in the way.
+
+			//only update the path ever pathUpdateStep seconds.
+			if (actionTime < pathUpdateStep)
 			{
-				//ray-cast hit nothing... so it has a straight path to a target with no gameobject.
-				actionTime = pathUpdateStep;
-				SetSingleNodePath(target.transform.position);
-				hasPath = true;
 				return;
 			}
-        }
-		
-		//only update the path ever pathUpdateStep seconds.
-        if (actionTime < pathUpdateStep)
-        {
-			return;
-        }
 
-        // raycase failed, do 3d A*.
-        NullifyPath();
-		
-		//this kicks off a thread to calculate a path.
-        pathFinder.requestPath(transform.position, target.transform.position, this);
+			// raycast failed, do 3d A*.
+			NullifyPath();
+
+			//this kicks off a thread to calculate a path.
+			pathFinder.requestPath(transform.position, target.transform.position, this);
 
 
-		if (path == null)
-        {
-			Debug.Log("Slow thing is happening here, bad!");
-            path = new List<Vector3>();
-            return;
+			if (path == null)
+			{
+				Debug.Log("Slow thing is happening here, bad!");
+				path = new List<Vector3>();
+				return;
+			}
+
+			actionTime = 0;
         }
 
-		actionTime = 0;
-    }
+	}
 
 	public void AllowPathTraversal(bool b)
 	{

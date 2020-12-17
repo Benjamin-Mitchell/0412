@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
 
+//Currently this class is duplicated on every agent. This may become a memory issue on many Agents, as we will have
+//a copy of the Node grid on each of them. If that is the case, may need to re-investigate using a single Pathfinder
+//object that all of the agents borrow from. This could result in queueing for accces to variables (e.g. the open set) from threads.
 
 //Aim of this class:
 // Describe the trilateral movement of an agent across a 3D grid, with obstacle avoidance.
@@ -73,7 +76,7 @@ public class Pathfinder : MonoBehaviour
     //public static int gridSize = 10;
     public static float nodeSize = 1.0f;
     public static Vector3 centrePos;
-    public Vector3 gridBottomCorner;
+    private  Vector3 gridBottomCorner;
 
     List<GameObject> obstacles;
 
@@ -163,6 +166,11 @@ public class Pathfinder : MonoBehaviour
 
             current = open[0];
             open.Remove(current);
+
+			if (current == null)
+				Debug.Log("How is current null?!");
+
+
             current.open = false;
             current.visited = true;
 
@@ -268,7 +276,7 @@ public class Pathfinder : MonoBehaviour
             if (!inOpen)
             {
                 neighbour.open = true;
-                open.Add(neighbour);
+				lock (open) { open.Add(neighbour); };
             }
 
             neighbour.f = f;
@@ -344,7 +352,7 @@ public class Pathfinder : MonoBehaviour
         //gridBottomCorner = centrePos - (new Vector3(gridSize / 2.0f, gridSize / 2.0f, gridSize / 2.0f) * nodeSize);
         gridBottomCorner = Vector3.zero;
 
-		centrePos = new Vector3(gridBottomCorner.x + (mapX / 2.0f), gridBottomCorner.y + (mapZ / 2.0f), gridBottomCorner.z + (mapZ / 2.0f));
+		centrePos = new Vector3(gridBottomCorner.x + (mapX / 2.0f), gridBottomCorner.y + (mapY / 2.0f), gridBottomCorner.z + (mapZ / 2.0f));
 
 		//initiate grid
 		InitiateGrid();
@@ -481,7 +489,25 @@ public class Pathfinder : MonoBehaviour
         int nodeY = (int)(nodePos.y / nodeSize);
         int nodeZ = (int)(nodePos.z / nodeSize);
 
-        return grid[nodeX, nodeY, nodeZ];
+		if (nodeX >= mapX)
+			nodeX = mapX-1;
+
+		if (nodeY >= mapY)
+			nodeY = mapY-1;
+
+		if (nodeZ >= mapZ)
+			nodeZ = mapZ-1;
+
+		if (nodeX < 0)
+			nodeX = 0;
+
+		if (nodeY < 0)
+			nodeY = 0;
+
+		if (nodeZ < 0)
+			nodeZ = 0;
+
+		return grid[nodeX, nodeY, nodeZ];
     }
 
 	/////////////////////////////////////////////

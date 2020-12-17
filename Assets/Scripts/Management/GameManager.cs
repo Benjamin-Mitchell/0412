@@ -11,7 +11,7 @@ public class GameManager : Singleton<GameManager>
 
     public bool finishedIntroduction = false;
 
-	private float units = 10000000;
+	private Value units = 10000000;
 
 	private float currentSpawnRateIncrease = 0.4f;
 	private float resourceSpawnRate = 1.0f;
@@ -34,7 +34,81 @@ public class GameManager : Singleton<GameManager>
     // Start is called before the first frame update
     void Start()
     {
-		unitsText.text = units + " U";
+		unitsText.text = units.GetStringVal();
+
+		//Value val = 100000;
+		
+		//Debug.Log("initial Value: " + val.GetStringVal());
+		
+		//Value temp = 1000;
+		////val += 1000;
+		
+		////Debug.Log("After adding 1000: " + val.GetStringVal());
+
+		////val -= 1000;
+		
+		////Debug.Log("After subtracting 1000: " + val.GetStringVal());
+
+		////val -= 1000000000;
+
+		////Debug.Log("After subtracting 1000000000: " + val.GetStringVal());
+
+		////val += 100000;
+
+		////Debug.Log("After adding 100000(100k): " + val.GetStringVal());
+
+		//val -= 99999.0f;
+
+		//Debug.Log("After substracting 99999(99.999k): " + val.GetStringVal());
+		//Debug.Log("val.val: " + val.val);
+
+		//val += temp;
+		
+		//Debug.Log("After adding 1k: " + val.GetStringVal());
+		
+		//val -= temp;
+		
+		//Debug.Log("After subtracting 1k: " + val.GetStringVal());
+		
+		//val *= 5;
+		
+		//Debug.Log("After multiplying by 5: " + val.GetStringVal());
+		
+		//val /= 5;
+		
+		//Debug.Log("After dividing by 5: " + val.GetStringVal());
+		
+		//temp = 5;
+		//val *= temp;
+		
+		//Debug.Log("After multiplying by 5(Value): " + val.GetStringVal());
+		
+		//val /= temp;
+		
+		//Debug.Log("After dividing by 5(Value): " + val.GetStringVal());
+		
+		//temp = 5000;
+		//Value tempTwo = 5000000;
+		
+		
+		//Debug.Log("Is 5000 greater than 5000000?:" + (temp > tempTwo ? "Yes!" : "No!"));
+		//Debug.Log("Is 5000000 greater than 5000?:" + (tempTwo > temp ? "Yes!" : "No!"));
+		
+		
+		//Debug.Log("Is 5000 less than 5000000?:" + (temp < tempTwo ? "Yes!" : "No!"));
+		//Debug.Log("Is 5000000 less than 5000?:" + (tempTwo < temp ? "Yes!" : "No!"));
+
+		//Debug.Log( tempTwo.ToFloat() + " / " + temp.ToFloat() + " is "+ (tempTwo / temp).ToFloat());
+		//Debug.Log("Ben Test ToFloat! And Create a ToDouble!");
+
+		//temp = 560;
+		//tempTwo = 33400;
+		
+		//Debug.Log("A random number between 560 and 33400 is:" + Value.RandomRange(temp, tempTwo).GetStringVal());
+		
+		//temp = 10;
+		
+		//Debug.Log("10 to the power of 5 is: " + Value.Pow(temp, 5).GetStringVal());
 	}
 
     // Update is called once per frame
@@ -43,10 +117,12 @@ public class GameManager : Singleton<GameManager>
         
     }
 
-	public void AddUnits(float u)
+	public void AddUnits(Value v)
 	{
-		units += (u * unitReturnRate);
-		unitsText.text = (int)units + " U";
+		//units.AddVal(v);
+		units += (v * unitReturnRate);
+
+		unitsText.text = units.GetStringVal();
 	}
 
 	public bool IncrementSpawnRate()
@@ -56,7 +132,7 @@ public class GameManager : Singleton<GameManager>
 		else
 			return false;
 
-		unitsText.text = units + " U";
+		unitsText.text = units.GetStringVal();
 
 		spawnRateIncreaseCost = Mathf.Pow(spawnRateIncreaseCost, 2) * 2;
 		resourceSpawnRate *= (1.0f + currentSpawnRateIncrease);
@@ -73,7 +149,7 @@ public class GameManager : Singleton<GameManager>
 		else
 			return false;
 
-		unitsText.text = units + " U";
+		unitsText.text = units.GetStringVal();
 
 		resourceValueIncreaseCost = Mathf.Pow(resourceValueIncreaseCost, 2) * 4;
 
@@ -88,7 +164,7 @@ public class GameManager : Singleton<GameManager>
 		else
 			return false;
 
-		unitsText.text = units + " U";
+		unitsText.text = units.GetStringVal();
 
 		unitReturnIncreaseCost *= 100.0f;
 

@@ -37,7 +37,7 @@ public class AgentGameplay : MonoBehaviour
 	private Vector3 returnPosition;
 
     //how much value am I currently carrying
-    private float carryingValue;
+    private Value carryingValue;
 
 
     /// Idle Rotation variables

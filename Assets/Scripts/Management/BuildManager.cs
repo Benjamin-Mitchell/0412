@@ -257,7 +257,7 @@ public class BuildManager : MonoBehaviour
         beingBuilt.transform.eulerAngles = new Vector3(Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f));
 
 		if(!isFreshBuild)
-			referanceBase.heldResource -= referanceBase.reqToBuild;
+			referanceBase.HeldResource -= referanceBase.ReqToBuild;
 
 		inputManager.MoveCamTo(beingBuilt.GetComponent<Base>());
 
@@ -274,9 +274,10 @@ public class BuildManager : MonoBehaviour
 	}
 
 	//TODO: Update with new types when they are ready.
-	string[] types = new string[5] { "Dirty", "Pie", "Dirty", "Dirty", "Dirty" };
+	string[] types = new string[5] { "Dirty", "Pie", "Seller", "Proxy", "Teabag" };
 	public void BuildFreshBase(int baseTypeIndex)
 	{
+
 		if(!gameManager.finishedIntroduction)
 		{
 			BeginIntroBuild();

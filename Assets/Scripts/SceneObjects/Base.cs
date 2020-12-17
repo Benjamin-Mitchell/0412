@@ -9,11 +9,14 @@ public class Base : MonoBehaviour
 
     public float[] sphereScalingFactors = new float[5];
 
-    public int heldResource = 0;
-    public int reqToUpgrade = 0;
-    public int reqToBuild = 0;
-    
-    public int stage = 0;
+    private Value heldResource = 0;
+	public Value HeldResource {get { return heldResource;  } set { heldResource = value; } }
+    private Value reqToUpgrade = 0;
+    public Value ReqToUpgrade { get { return reqToUpgrade; } set { reqToUpgrade = value; } }
+	private Value reqToBuild = 0;
+	public Value ReqToBuild { get { return reqToBuild; } set { reqToBuild = value; } }
+
+	public int stage = 0;
     public int numBuilds = 0;
 
 	[SerializeField]
@@ -91,31 +94,25 @@ public class Base : MonoBehaviour
         return val;
     }
 
-	public void AddResourcesOverTime(float val, float time)
+	public void AddResourcesOverTime(Value val, float time)
 	{
 		float percent = (1.0f + (increasePercent / 100.0f)) * gameManager.GetResourceValueMultiplier();
 
-		float mulVal = val * percent;
+		Value mulVal = val * percent;
 
 		StartCoroutine(IncrementResourceOverTime(mulVal, time));
 	}
 
-	public IEnumerator IncrementResourceOverTime(float val, float time)
+	public IEnumerator IncrementResourceOverTime(Value val, float time)
 	{
-		float sinceLastVisualUpdate = 0, timePassed = 0;
+		float timePassed = 0;
 
 		while (timePassed < time)
 		{
-			float increment = val * (Time.deltaTime / time);
-			sinceLastVisualUpdate += increment;
+			Value increment = val * (Time.deltaTime / time);
+			heldResource += increment;
+			gameManager.AddUnits(increment);
 			timePassed += Time.deltaTime;
-
-			if(sinceLastVisualUpdate >= 1.0f)
-			{
-				heldResource += 1;
-				gameManager.AddUnits(1);
-				sinceLastVisualUpdate -= 1.0f;
-			}
 			yield return null;
 		}
 	}
@@ -124,7 +121,7 @@ public class Base : MonoBehaviour
     {
         float percent = 1.0f + (increasePercent / 100.0f);
         float fVal = (float)val * percent;
-        heldResource += (int)fVal;
+		heldResource += fVal;
     }
 
 

@@ -59,8 +59,8 @@ public class UIManager : MonoBehaviour
 	public delegate void RevertDelegate();
 	public RevertDelegate revert;
 
-	private float baseResource = 0;
-    private float baseReqToUpdate = 0;
+	private Value baseResource = 0;
+    private Value baseReqToUpdate = 0;
     private bool fullyUpgraded = false;
     private Base baseRef = null;
 
@@ -90,7 +90,7 @@ public class UIManager : MonoBehaviour
 
     private void UpdateUpgradeVisual()
     {
-        resourceText.text = ReturnValueAstring(baseRef.heldResource);
+        resourceText.text = baseRef.HeldResource.GetStringVal();
 
         if (fullyUpgraded)
         {
@@ -99,10 +99,10 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        baseResource = (float)baseRef.heldResource;
-        baseReqToUpdate = (float)baseRef.reqToUpgrade;
+        baseResource = baseRef.HeldResource;
+        baseReqToUpdate = baseRef.ReqToUpgrade;
 
-        float percent = (baseResource / baseReqToUpdate);
+        float percent = (baseResource / baseReqToUpdate).ToFloat();
         percent = Mathf.Clamp(percent, 0.0f, 1.0f);
 
         float r = 1.0f - percent;
@@ -128,9 +128,9 @@ public class UIManager : MonoBehaviour
         buildText.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 
         // costs reqToUpgrade ^ 2;
-        buildText.text = "Build (" + ReturnValueAstring(baseRef.reqToBuild) + ")";
+        buildText.text = "Build (" + baseRef.ReqToBuild.GetStringVal() + ")";
 
-        float percent = ((float)baseRef.heldResource / (float)baseRef.reqToBuild);
+        float percent = (baseRef.HeldResource / baseRef.ReqToBuild).ToFloat();
         float r = 1.0f - percent;
         float g = percent;
 
@@ -189,7 +189,7 @@ public class UIManager : MonoBehaviour
 
     public void UpgradeBase()
     {
-        if (baseRef.heldResource >= baseRef.reqToUpgrade)
+        if (baseRef.HeldResource > baseRef.ReqToUpgrade)
         {
             baseRef.UpgradeBase();
             fullyUpgraded = baseRef.IsFullyUpgraded();
@@ -199,7 +199,7 @@ public class UIManager : MonoBehaviour
 
     public void BuildProcess()
     {
-        if (baseRef.heldResource < baseRef.reqToBuild)
+        if (baseRef.HeldResource < baseRef.ReqToBuild)
             return;
 
         RecalculateBuildReq();
@@ -217,6 +217,7 @@ public class UIManager : MonoBehaviour
 
 	public void BuildFreshProcess()
 	{
+		DisableBuildUI();
 		RevertDelegate revertable = DefaultStatebuildEnabled;
 		revertable += buildManager.StopBuild;
 		enableRevertUI(revertable);
@@ -297,7 +298,7 @@ public class UIManager : MonoBehaviour
 
 	private void RecalculateBuildReq()
     {
-		baseRef.reqToBuild = (int)Mathf.Pow((int)Mathf.Pow((float)baseRef.reqToUpgrade, 1.2f), (int)Mathf.Pow((float)(baseRef.numBuilds + 1), 1.2f));
+		baseRef.ReqToBuild = Value.Pow(Value.Pow(baseRef.ReqToUpgrade, 1.2f), Mathf.Pow((baseRef.numBuilds + 1), 1.2f));
     }
 
     public void addTapBoost()

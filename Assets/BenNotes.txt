@@ -1,9 +1,25 @@
-CURRENT CODING PROBLEMS:
+TODAY:
+	
+ONGOING:
 
+
+NEXT STEPS:
+
+	- Make sure each base fits reasonably into the scale of the pathfinder 
+		(first levels of bases should be roughly 1 unit)
+
+	- Some smoothing of the pathfinding would be nice. 
+		- Doesn't need to go to the centre if we know nothing is in it.
+	
+	- Expand the "Build new" hammer's window to include prices 
+		- this should look something like a shop eventually.
+
+	- make sure resources exist before changing agent state to chase/load them etc.
+
+ 
 - Pathfind:
+	- Fix it taking a very non-direct route
 	- currently doesn't take into account agent's size - assumes one node.
 	- test obstacle system
 	- need to dynamically update grid with dynamic object positions.
-	- deal with not being able to find the path
-	- looks odd when it tries to go in a straight line but has to go via node centres...
-		- implement a first effort ray-cast? Could be very efficient...
+	- currently each agent has its own pathfinder to get around thread-sharing issues. Is that bad for mem?

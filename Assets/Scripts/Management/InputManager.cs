@@ -83,6 +83,11 @@ public class InputManager : MonoBehaviour
 							MoveCamTo(hit.collider.gameObject.GetComponent<Base>());
 							return;
 						}
+						else if (hit.collider.CompareTag("Agent"))
+						{
+							MoveCamTo(hit.collider.gameObject.GetComponent<AgentStats>());
+							return;
+						}
 					}
 				}
             }
@@ -170,6 +175,7 @@ public class InputManager : MonoBehaviour
         else if (traversing)
         {
             //move towards traversal target within traversal time.
+
             float step = traversalSpeed * Time.deltaTime;
             float angularStep = traversalAngularSpeed * Time.deltaTime;
 
@@ -203,6 +209,16 @@ public class InputManager : MonoBehaviour
 			_UIManager.EnableUI(b);
 		traversing = true;
 		camLookAt = b.gameObject.transform.position;
+		CalcTraversalTarget();
+	}
+
+	public void MoveCamTo(AgentStats stats)
+	{
+		if (_UIManager)
+			_UIManager.EnableUI(stats);
+		traversing = true;
+		camLookAt = stats.gameObject.transform.position;
+		//This needs to be reworked for agents, they are moving...
 		CalcTraversalTarget();
 	}
 

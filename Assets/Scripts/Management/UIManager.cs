@@ -5,44 +5,56 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
-    [SerializeField]
-    GameObject baseUI;
+	[SerializeField]
+	GameObject baseUI;
 
-    [SerializeField]
-    Image resourceImage;
+	[SerializeField]
+	GameObject agentUI;
 
-    [SerializeField]
-    Text resourceText;
+	[SerializeField]
+	Image resourceImage;
 
-    [SerializeField]
-    Image buildImage;
+	[SerializeField]
+	Text resourceText;
 
-    [SerializeField]
-    Text buildText;
+	[SerializeField]
+	Image buildImage;
 
-    [SerializeField]
-    Text tapTimeDisplayText;
-    
-    [SerializeField]
-    Text tapBoostText;
+	[SerializeField]
+	Text buildText;
 
-    [SerializeField]
-    Image tapFillBar;
+	[SerializeField]
+	Text tapTimeDisplayText;
 
-    [SerializeField]
-    BuildManager buildManager;
+	[SerializeField]
+	Text tapBoostText;
 
-    [SerializeField]
-    GameObject confirmUI;
+	[SerializeField]
+	Image tapFillBar;
+
+	[SerializeField]
+	Text agentNameText;
+
+	[SerializeField]
+	Text resourceCollectedText;
+
+	[SerializeField]
+	Text distanceTravelledText;
+	
+	[SerializeField]
+	BuildManager buildManager;
+
+	[SerializeField]
+	GameObject confirmUI;
 
 	[SerializeField]
 	GameObject revertUI;
 
-    [SerializeField]
-    GameObject buildNewUI;
+	[SerializeField]
+	GameObject buildNewUI;
 
-    [SerializeField]
-    GameObject hammerUI;
+	[SerializeField]
+	GameObject hammerUI;
 
 	[SerializeField]
 	GameObject buyUI;
@@ -54,17 +66,22 @@ public class UIManager : MonoBehaviour
 	Text spawnRateUpgradeText, resourceValueUpgradeText, unitReturnRateUpgradeText;
 
 	public delegate void ConfirmDelegate();
-    public ConfirmDelegate confirm;
+	public ConfirmDelegate confirm;
 
 	public delegate void RevertDelegate();
 	public RevertDelegate revert;
 
 	private Value baseResource = 0;
-    private Value baseReqToUpdate = 0;
-    private bool fullyUpgraded = false;
-    private Base baseRef = null;
+	private Value baseReqToUpdate = 0;
+	private bool fullyUpgraded = false;
+	private Base baseRef = null;
+
+	private AgentStats agentRef = null;
 
 	private GameManager gameManager;
+
+	enum UIACTIVE {Base, Agent, none};
+	UIACTIVE active;
 
     // Start is called before the first frame update
     void Start()
@@ -79,13 +96,23 @@ public class UIManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+		switch(active)
+		{
+			case UIACTIVE.Base:
+				if (!baseRef)
+					return;
 
-        if (!baseRef)
-            return;
+				UpdateUpgradeVisual();
+				UpdateBuildVisual();
+				UpdateTapBoostVisual();
+				break;
+			case UIACTIVE.Agent:
+				UpdateAgentVisuals();
+				break;
+			case UIACTIVE.none:
 
-        UpdateUpgradeVisual();
-        UpdateBuildVisual();
-        UpdateTapBoostVisual();
+				break;
+		}
     }
 
     private void UpdateUpgradeVisual()
@@ -164,20 +191,37 @@ public class UIManager : MonoBehaviour
         tapBoostText.text = "Increased Resource Yield: " + baseRef.increasePercent + "%";
     }
 
+	private void UpdateAgentVisuals()
+	{
+		agentNameText.text = agentRef.agentName;
+		resourceCollectedText.text = "Resource Collected: " + agentRef.resourceCollected.ToString();
+		distanceTravelledText.text = "Distance Travelled: " + agentRef.distanceTravelled.ToString();
+	}
+
     //For now you can only select bases
     public void EnableUI(Base b)
     {
+		active = UIACTIVE.Base;
         baseRef = b;
         RecalculateBuildReq();
 		baseUI.SetActive(true);
         fullyUpgraded = baseRef.IsFullyUpgraded();
     }
 
+	public void EnableUI(AgentStats a)
+	{
+		active = UIACTIVE.Agent;
+		agentRef = a;
+		agentUI.SetActive(true);
+	}
+
     public void DisableUI()
     {
+		active = UIACTIVE.none;
 		revertUI.SetActive(false);
 		confirmUI.SetActive(false);
 		baseUI.SetActive(false);
+		agentUI.SetActive(false);
         fullyUpgraded = false;
     }
 

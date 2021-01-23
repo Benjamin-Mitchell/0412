@@ -194,13 +194,14 @@ public class UIManager : MonoBehaviour
 	private void UpdateAgentVisuals()
 	{
 		agentNameText.text = agentRef.agentName;
-		resourceCollectedText.text = "Resource Collected: " + agentRef.resourceCollected.ToString();
-		distanceTravelledText.text = "Distance Travelled: " + agentRef.distanceTravelled.ToString();
+		resourceCollectedText.text = "Resource Collected: " + agentRef.resourceCollected.GetStringVal();
+		distanceTravelledText.text = "Distance Travelled: " + agentRef.distanceTravelled.GetStringVal();
 	}
 
     //For now you can only select bases
     public void EnableUI(Base b)
-    {
+	{
+		DefaultState();
 		active = UIACTIVE.Base;
         baseRef = b;
         RecalculateBuildReq();
@@ -210,6 +211,7 @@ public class UIManager : MonoBehaviour
 
 	public void EnableUI(AgentStats a)
 	{
+		DefaultState();
 		active = UIACTIVE.Agent;
 		agentRef = a;
 		agentUI.SetActive(true);
@@ -275,6 +277,7 @@ public class UIManager : MonoBehaviour
 		confirmUI.SetActive(false);
 		buildNewUI.SetActive(false);
 		baseUI.SetActive(false);
+		agentUI.SetActive(false);
     }
 
 	public void DefaultStatebuildEnabled()

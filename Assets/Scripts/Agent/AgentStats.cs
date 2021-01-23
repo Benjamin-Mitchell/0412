@@ -13,8 +13,8 @@ public class AgentStats : MonoBehaviour
     {
 		//Do load instead.
 		agentName = possibleNames[Random.Range(0, possibleNames.Length)];
-		resourceCollected = 1000000;
-		distanceTravelled = 4;
+		resourceCollected = 0;
+		distanceTravelled = 0;
     }
 
     // Update is called once per frame

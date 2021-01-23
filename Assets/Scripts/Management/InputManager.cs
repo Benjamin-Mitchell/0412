@@ -20,7 +20,7 @@ public class InputManager : MonoBehaviour
     private Vector2 previousPos;
     private Vector3 camLookAt;
     //
-    float distance, previousDistance;
+    float distance,  prevDistance;
     float minDistance = 5.0f;
     float maxDistance = 25.0f;
     float rotationYAxis = 0.0f;
@@ -31,12 +31,16 @@ public class InputManager : MonoBehaviour
     float previousTouchDistance;
     //
     bool traversing = false;
+	bool targetMoves = false;
+	GameObject traversalMovingTarget;
+
     Vector3 traversalTarget;
     float traversalDuration = 1.5f;
     float traversalTimePassed;
     float traversalSpeed;
     float traversalAngularSpeed;
     Vector3 traversalDirection;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -57,12 +61,11 @@ public class InputManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!traversing && inputEnabled)
+		if (!traversing && inputEnabled)
         {
-
-            //object tap control
+			//object tap control
 #if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
-            if (Input.GetMouseButtonDown(0) && !buildManager.building)
+			if (Input.GetMouseButtonDown(0) && !buildManager.building)
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 #elif (UNITY_ANDROID || UNITY_IOS)
@@ -80,12 +83,15 @@ public class InputManager : MonoBehaviour
 					{
 						if (hit.collider.CompareTag("Base"))
 						{
-							MoveCamTo(hit.collider.gameObject.GetComponent<Base>());
+							MoveCamTo(hit.collider.gameObject.GetComponentInParent<Base>());
+							//MoveCamTo(hit.collider.gameObject.transform.parent.GetComponent<Base>());
 							return;
 						}
 						else if (hit.collider.CompareTag("Agent"))
 						{
-							MoveCamTo(hit.collider.gameObject.GetComponent<AgentStats>());
+							//colliders are on the individual agent stage objects (for size correctness)
+							//These are children of the actual agent object.
+							MoveCamTo(hit.collider.gameObject.GetComponentInParent<AgentStats>());
 							return;
 						}
 					}
@@ -165,16 +171,33 @@ public class InputManager : MonoBehaviour
                 cam.transform.rotation = rotation;
             }
 
-            if (dragging || distance != previousDistance)
+            if (dragging || distance != prevDistance)
             {
                 Vector3 negDistance = new Vector3(0.0f, 0.0f, -distance);
                 Vector3 position = rotation * negDistance + camLookAt;
                 cam.transform.position = position;
+				prevDistance = distance;
             }
-        }
+
+			if (targetMoves)
+			{
+				//Make sure the camera keeps following the moving target
+				Vector3 positionDiff = traversalMovingTarget.transform.position - camLookAt;
+				cam.transform.position += positionDiff;
+				
+				camLookAt = traversalMovingTarget.transform.position;
+			}
+		}
         else if (traversing)
         {
             //move towards traversal target within traversal time.
+
+			//need to recalculate traversal if the target moves (like agents)
+			if(targetMoves)
+			{
+				camLookAt = traversalMovingTarget.transform.position;
+				CalcTraversalTarget();
+			}
 
             float step = traversalSpeed * Time.deltaTime;
             float angularStep = traversalAngularSpeed * Time.deltaTime;
@@ -200,15 +223,18 @@ public class InputManager : MonoBehaviour
                 rotation = toRotation;
             }
         }
-
-    }
+	}
 
 	public void MoveCamTo(Base b)
 	{
 		if (_UIManager)
 			_UIManager.EnableUI(b);
+
 		traversing = true;
+		targetMoves = false;
 		camLookAt = b.gameObject.transform.position;
+		traversalTimePassed = 0.0f;
+
 		CalcTraversalTarget();
 	}
 
@@ -216,9 +242,13 @@ public class InputManager : MonoBehaviour
 	{
 		if (_UIManager)
 			_UIManager.EnableUI(stats);
+
 		traversing = true;
+		targetMoves = true;
 		camLookAt = stats.gameObject.transform.position;
-		//This needs to be reworked for agents, they are moving...
+		traversalMovingTarget = stats.gameObject;
+		traversalTimePassed = 0.0f;
+
 		CalcTraversalTarget();
 	}
 
@@ -257,11 +287,10 @@ public class InputManager : MonoBehaviour
         target = position;
 
         traversalTarget = target;
-        traversalTimePassed = 0.0f;
 
-        traversalSpeed = Vector3.Distance(cam.transform.position, target)/traversalDuration;
+        traversalSpeed = Vector3.Distance(cam.transform.position, target)/(traversalDuration - traversalTimePassed);
 
-        traversalAngularSpeed = (Vector3.Angle(cam.transform.forward, traversalDirection) * Mathf.Deg2Rad)/traversalDuration;
+        traversalAngularSpeed = (Vector3.Angle(cam.transform.forward, traversalDirection) * Mathf.Deg2Rad)/(traversalDuration - traversalTimePassed);
     }
 }
 

@@ -20,15 +20,24 @@ public class AgentPathfinder : MonoBehaviour
 
 	private bool pathTraversalEnabled = true;
 
+	AgentStats stats;
+	Vector3 oldPosition;
+
 	// Start is called before the first frame update
 	void Awake()
     {
         pathFinder = GetComponent<Pathfinder>();
 		actionTime = pathUpdateStep;
+		stats = GetComponent<AgentStats>();
     }
 
-    // Update is called once per frame
-    void Update()
+	private void Start()
+	{
+		oldPosition = transform.position;
+	}
+
+	// Update is called once per frame
+	void Update()
     {
         actionTime += Time.deltaTime;
 		
@@ -37,6 +46,7 @@ public class AgentPathfinder : MonoBehaviour
 			if (pathTraversalEnabled)
 			{
 				transform.position = Vector3.MoveTowards(transform.position, path[0], moveSpeed * Time.deltaTime);
+				stats.distanceTravelled += Vector3.Distance(transform.position, oldPosition);
 				transform.LookAt(path[0]);
 
 				if (Vector3.Distance(transform.position, path[0]) < 0.05f)

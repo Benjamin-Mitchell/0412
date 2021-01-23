@@ -14,6 +14,8 @@ public class AgentGameplay : MonoBehaviour
 	[SerializeField]
 	private float timeToLoad = 1.5f;
 
+	AgentStats stats;
+
     public enum State
     {
         UnderSpawnOrders,
@@ -52,6 +54,7 @@ public class AgentGameplay : MonoBehaviour
 	private void Awake()
 	{
 		agentPathfinding = gameObject.GetComponent<AgentPathfinder>();
+		stats = GetComponent<AgentStats>();
 	}
 	// Start is called before the first frame update
 	void Start()
@@ -132,7 +135,10 @@ public class AgentGameplay : MonoBehaviour
 				{
 					agentPathfinding.AllowPathTraversal(true);
 					loadingTime = .0f;
+
+					stats.resourceCollected += carryingValue;
 					carryingValue = .0f;
+
 					state = State.Idle;
 					break;
 				}

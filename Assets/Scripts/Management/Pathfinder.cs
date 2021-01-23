@@ -344,7 +344,7 @@ public class Pathfinder : MonoBehaviour
         int maxNeighbours = 26;
         neighbours = new List<Node>(maxNeighbours);
 
-        transform.position = centrePos;
+        //transform.position = centrePos;
 
         //inital population of lists.
         obstacles = new List<GameObject>(GameObject.FindGameObjectsWithTag("Obstacle"));

@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class ResourceSpawner : MonoBehaviour
 {
+	//Rough number of seconds between spawns (Uses some variation)
     public float spawnRate;
 
     //input as a percentage (/100)
@@ -56,7 +57,7 @@ public class ResourceSpawner : MonoBehaviour
 			return;
 
 		spawnTimer = .0f;
-        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime);
+        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime) / gameManager.GetResourceSpawnRate();
 
         //resources will move across the Z axis (constant X and Y from start)
         Vector3 spawnPos = new Vector3(

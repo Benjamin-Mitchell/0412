@@ -42,15 +42,6 @@ public class AgentGameplay : MonoBehaviour
     //how much value am I currently carrying
     private Value carryingValue;
 
-
-    /// Idle Rotation variables
-    private Vector3 centre;
-    private float radius;
-    private Vector3 axis;
-    private float orbitRotationSpeed = 10.0f;
-    private float radiusCorrectionSpeed = 0.5f;
-    private Vector3 previousPos;
-
 	private void Awake()
 	{
 		agentPathfinding = gameObject.GetComponent<AgentPathfinder>();
@@ -81,7 +72,7 @@ public class AgentGameplay : MonoBehaviour
 				if (Vector3.Distance(transform.position, returnPosition) < 0.1f)
                 {
                     agentPathfinding.NullifyPath();
-                    state = State.Idle;
+					IdleState();
                 }
 
                 break;
@@ -91,7 +82,7 @@ public class AgentGameplay : MonoBehaviour
                 
 
                 // TODO: need to modify distance to resource beforce collecting it
-                if (Vector3.Distance(transform.position, resourceTarget.transform.position) < 0.3f)
+                if (Vector3.Distance(transform.position, resourceTarget.transform.position) < 2.5f)
                 {
                     // Get Resource
                     carryingValue = resourceTarget.value;
@@ -115,13 +106,11 @@ public class AgentGameplay : MonoBehaviour
 
                 break;
 			case State.LoadingResource:
-
+				
 				if (loadingTime > timeToLoad && agentPathfinding.hasPath)
 				{
 					loadingTime = .0f;
-					Destroy(resourceTarget.gameObject);
-					state = State.ReturningResource;
-					agentPathfinding.AllowPathTraversal(true);
+					ReturnWithResource();
 					break;
 				}
 
@@ -139,7 +128,7 @@ public class AgentGameplay : MonoBehaviour
 					stats.resourceCollected += carryingValue;
 					carryingValue = .0f;
 
-					state = State.Idle;
+					IdleState();
 					break;
 				}
 
@@ -156,7 +145,7 @@ public class AgentGameplay : MonoBehaviour
 
 					if (agentPathfinding.hasPath)
 					{
-						state = State.ChasingResource;
+						BeginChasing();
 					}
 				}
 				else
@@ -166,27 +155,31 @@ public class AgentGameplay : MonoBehaviour
 
 
 				//chill out
-
-				//Movement
-				//transform.RotateAround(associatedBase.gameObject.transform.position, axis, orbitRotationSpeed * Time.deltaTime);
-				//Vector3 orbitDesiredPosition = (transform.position - associatedBase.gameObject.transform.position).normalized * radius + associatedBase.gameObject.transform.position;
-				//transform.position = Vector3.Slerp(transform.position, orbitDesiredPosition, Time.deltaTime * radiusCorrectionSpeed);
-				//
-				////Rotation
-				//Vector3 relativePos = transform.position - previousPos;
-				//Quaternion rotation = Quaternion.LookRotation(relativePos);
-				//transform.rotation = Quaternion.Slerp(transform.rotation, rotation, radiusCorrectionSpeed * Time.deltaTime);
-				//previousPos = transform.position;
-
+				//agentPathfinding.OrbitTarget(associatedBase.gameObject);
 
 				break;
 
         }
     }
 
+	private void BeginChasing()
+	{
+		state = State.ChasingResource;
+		agentPathfinding.AllowPathTraversal(true);
+
+	}
+
+	private void ReturnWithResource()
+	{
+		Destroy(resourceTarget.gameObject);
+		state = State.ReturningResource;
+		agentPathfinding.AllowPathTraversal(true);
+	}
+
 	private void BeginLoading()
 	{
-		agentPathfinding.SetPath(defaultTarget);
+		agentPathfinding.SetPath(associatedBase.gameObject);
+		agentPathfinding.SetOrbitTarget(resourceTarget.gameObject);
 		returnPosition = defaultTarget.transform.position;
 		resourceTarget.consume();
 		state = State.LoadingResource;
@@ -206,6 +199,14 @@ public class AgentGameplay : MonoBehaviour
 
 		state = State.UnloadingResource;
 		agentPathfinding.AllowPathTraversal(false);
+	}
+
+	private void IdleState()
+	{
+		state = State.Idle;
+		agentPathfinding.AllowPathTraversal(false);
+		agentPathfinding.SetOrbitTarget(associatedBase.gameObject);
+
 	}
 
     public State getState()

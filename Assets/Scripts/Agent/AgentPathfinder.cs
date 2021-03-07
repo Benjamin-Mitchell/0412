@@ -9,6 +9,7 @@ public class AgentPathfinder : MonoBehaviour
     Pathfinder pathFinder;
 
     public float moveSpeed = 1.0f;
+	public float rotationSpeed = 0.1f;
 
     //How often should the path information be reset (in seconds)
     private float pathUpdateStep = 3.0f;
@@ -22,6 +23,15 @@ public class AgentPathfinder : MonoBehaviour
 
 	AgentStats stats;
 	Vector3 oldPosition;
+
+	/// Orbit variables
+	private float orbitRadius = 5.0f;
+	private Vector3 axis = Vector3.up;
+	private float orbitRotationSpeed = 10.0f;
+	private float radiusCorrectionSpeed = 0.5f;
+	private Vector3 previousPos;
+
+	private GameObject orbitTarget;
 
 	// Start is called before the first frame update
 	void Awake()
@@ -45,21 +55,49 @@ public class AgentPathfinder : MonoBehaviour
         {
 			if (pathTraversalEnabled)
 			{
-				transform.position = Vector3.MoveTowards(transform.position, path[0], moveSpeed * Time.deltaTime);
+				//transform.position = Vector3.MoveTowards(transform.position, path[0], moveSpeed * Time.deltaTime);
+				transform.position = Vector3.MoveTowards(transform.position, transform.position + transform.forward, moveSpeed * Time.deltaTime);
 				stats.distanceTravelled += Vector3.Distance(transform.position, oldPosition);
-				transform.LookAt(path[0]);
+				oldPosition = transform.position;
+
+				//transform.LookAt(path[0]);
+
+				//smoother rotation, so the units don't jerk towards their target.
+				float rotationStep = rotationSpeed * Time.deltaTime;
+				Vector3 moveDirection = path[0] - transform.position;
+				Vector3 newDirection = Vector3.RotateTowards(transform.forward, moveDirection, rotationStep, 0.0f);
+				transform.rotation = Quaternion.LookRotation(newDirection);
+
+				Debug.DrawRay(transform.position, path[0] - transform.position, Color.red);
+				Debug.DrawRay(transform.position, transform.forward, Color.green);
+				Debug.DrawRay(transform.position, newDirection, Color.blue);
 
 				if (Vector3.Distance(transform.position, path[0]) < 0.05f)
 				{
 					path.RemoveAt(0);
+
+					//if a raycast in the direction of the next path node hits nothing, skip this path node
+					while (!Physics.Raycast(transform.position, path[1] - transform.position, 1000.0f))
+					{
+						Debug.Log("Skipping a step!");
+						path.RemoveAt(0);
+						if (path.Count <= 1)
+							break;
+					}
 				}
 			}
-        }
+		}
 		else
 		{
 			hasPath = false;
 		}
-    }
+
+
+		if (orbitTarget && !pathTraversalEnabled)
+		{
+			OrbitTarget();
+		}
+	}
 
 	public void SetPath(Vector3 target)
 	{
@@ -103,13 +141,14 @@ public class AgentPathfinder : MonoBehaviour
 
     public void SetPath(GameObject target)
     {
+
 		Debug.DrawRay(transform.position, target.transform.position - transform.position);
 		//do a ray-cast first, this is more optimal if possible. returns true if hits a collider
 		if (Physics.Raycast(transform.position, target.transform.position - transform.position, out RaycastHit hit))
         {
-			
-            // target is in direct vision
-            if (hit.collider.gameObject == target)
+
+			// target is in direct vision
+			if (hit.collider.gameObject == target)
             {
                 actionTime = pathUpdateStep;
                 SetSingleNodePath(target.transform.position);
@@ -127,7 +166,7 @@ public class AgentPathfinder : MonoBehaviour
 
 			// raycast failed, do 3d A*.
 			NullifyPath();
-
+			
 			//this kicks off a thread to calculate a path.
 			pathFinder.requestPath(transform.position, target.transform.position, this);
 
@@ -142,6 +181,43 @@ public class AgentPathfinder : MonoBehaviour
 			actionTime = 0;
         }
 
+	}
+
+	public void SetOrbitTarget(GameObject target)
+	{
+		orbitTarget = target;
+
+		//need the colliderManager to figure out the size of the object
+		colliderManager colliderMgr;
+		if ((colliderMgr = target.GetComponent<colliderManager>()) == null)
+		{
+			colliderMgr = target.GetComponentInChildren<colliderManager>();
+		}
+
+		Vector3 targetSize = colliderMgr.size;
+		orbitRadius = Mathf.Max(targetSize.x, targetSize.y, targetSize.z);
+		orbitRadius *= 1.5f;
+
+		orbitRadius = Mathf.Max(orbitRadius, 2.5f);
+	}
+
+	private void OrbitTarget()
+	{
+		//update radius to be a function of the objects size - can probably re-use collider size calculations
+
+
+		//Movement
+		// change axis here to avoid always using the same orbit axis. this will be necessary when there are multiple agents per base.
+		// axis = cross product of forward and backward transform vectors? What does that look like?
+		transform.RotateAround(orbitTarget.transform.position, axis, orbitRotationSpeed * Time.deltaTime);
+		Vector3 orbitDesiredPosition = (transform.position - orbitTarget.transform.position).normalized * orbitRadius + orbitTarget.transform.position;
+		transform.position = Vector3.Slerp(transform.position, orbitDesiredPosition, Time.deltaTime * radiusCorrectionSpeed);
+
+		//Rotation
+		Vector3 relativePos = transform.position - previousPos;
+		Quaternion rotation = Quaternion.LookRotation(relativePos);
+		transform.rotation = Quaternion.Slerp(transform.rotation, rotation, radiusCorrectionSpeed * Time.deltaTime);
+		previousPos = transform.position;
 	}
 
 	public void AllowPathTraversal(bool b)

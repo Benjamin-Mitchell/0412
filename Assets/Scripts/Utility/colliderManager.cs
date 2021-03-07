@@ -18,11 +18,15 @@ public class colliderManager : MonoBehaviour
 	// Start is called before the first frame update
 	void Awake()
 	{
-		mesh = meshToMeasure.mesh;
+		//if(meshToMeasure)
+			mesh = meshToMeasure.mesh;
+
 		CalculateSize();
+
+		Debug.Log(gameObject.name + "'s size is " + size);
 	}
 
-	private void getMeshColliderSize()
+	private void GetMeshColliderSize()
 	{
 		//localise the verts
 		Vector3[] verts = mesh.vertices;
@@ -93,30 +97,31 @@ public class colliderManager : MonoBehaviour
 			size = Vector3.Scale(transform.localScale, boxCol.size);
 			return;
 		}
-
+		
 		SphereCollider sphereCol;
 		if ((sphereCol = GetComponent<SphereCollider>()) != null)
 		{
 			float radius = sphereCol.radius;
-			size = new Vector3(radius / 2.0f, radius / 2.0f, radius / 2.0f);
+			size = new Vector3(radius * 2.0f, radius * 2.0f, radius * 2.0f);
 			return;
 		}
 		else if ((sphereCol = GetComponentInChildren<SphereCollider>()) != null)
 		{
 			float radius = sphereCol.radius;
-			size = new Vector3(radius / 2.0f, radius / 2.0f, radius / 2.0f);
+			size = new Vector3(radius * 2.0f, radius * 2.0f, radius * 2.0f);
 			return;
 		}
 
 		//MeshCollider meshCol;
 		//if ((meshCol = GetComponent<MeshCollider>()) != null)
 		//{
-		getMeshColliderSize();
+		GetMeshColliderSize();
 		//}
 		//else if ((meshCol = GetComponentInChildren<MeshCollider>()) != null)
 		//{
 		//getMeshColliderSize();
 		//}
+
 
 		//add any further colliders to test here if and when we add them.
 	}

@@ -245,7 +245,7 @@ public class AgentPathfinder : MonoBehaviour
             path.Clear();
     }
 
-    public void orderImmediateMovement()
+    public void OrderImmediateMovement()
     {
         actionTime = pathUpdateStep;
     }

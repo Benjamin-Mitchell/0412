@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class BaseRotate : MonoBehaviour
 {
 	public Vector3 rotation;
@@ -14,6 +15,11 @@ public class BaseRotate : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		transform.Rotate(rotation);
+		//transform.Rotate(rotation);
     }
+
+	private void OnRenderObject()
+	{
+		transform.Rotate(rotation);
+	}
 }

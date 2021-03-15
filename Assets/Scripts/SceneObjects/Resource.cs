@@ -11,9 +11,12 @@ public class Resource : MonoBehaviour
 
 	private bool canMove = true;
 
+	private Shake shake;
+
     // Start is called before the first frame update
     void Start()
     {
+		shake = GetComponent<Shake>();
         target = new Vector3(transform.position.x, transform.position.y, -1.0f);
 
         //add some slight variation to the value - not sure if this is useful..
@@ -34,6 +37,7 @@ public class Resource : MonoBehaviour
 
 	public void consume()
 	{
+		shake.EnableShake();
 		//this is where an agent can consume a resource. Resources can have animations here.
 		canMove = false;
 	}

@@ -11,8 +11,7 @@ public class AgentGameplay : MonoBehaviour
 
 	private float loadingTime = 0.0f;
 
-	[SerializeField]
-	private float timeToLoad = 1.5f;
+	private float timeToLoad = 5.0f;
 
 	AgentStats stats;
 
@@ -190,7 +189,7 @@ public class AgentGameplay : MonoBehaviour
 	{
 		//check here too
 		resourceTarget = resourceSpawner.RequestResource();
-
+		agentPathfinding.SetOrbitTarget(associatedBase.gameObject);
 
 		if (resourceTarget != null)
 			agentPathfinding.SetPath(resourceTarget.gameObject);

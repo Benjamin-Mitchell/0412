@@ -10,9 +10,10 @@ public class AgentPathfinder : MonoBehaviour
 
     public float moveSpeed = 1.0f;
 	public float rotationSpeed = 0.1f;
+	public float orbitRotationSpeed = 10.0f;
 
-    //How often should the path information be reset (in seconds)
-    private float pathUpdateStep = 3.0f;
+	//How often should the path information be reset (in seconds)
+	private float pathUpdateStep = 3.0f;
 
 	private float actionTime;
 
@@ -27,11 +28,13 @@ public class AgentPathfinder : MonoBehaviour
 	/// Orbit variables
 	private float orbitRadius = 5.0f;
 	private Vector3 axis = Vector3.up;
-	private float orbitRotationSpeed = 10.0f;
-	private float radiusCorrectionSpeed = 0.5f;
+	private float radiusCorrectionSpeed = 2.0f;
 	private Vector3 previousPos;
 
-	private GameObject orbitTarget;
+
+	private GameObject orbitDynamicTarget;
+	private Vector3 orbitStaticTarget;
+	private bool orbitStatic = true;
 
 	// Start is called before the first frame update
 	void Awake()
@@ -68,10 +71,6 @@ public class AgentPathfinder : MonoBehaviour
 				Vector3 newDirection = Vector3.RotateTowards(transform.forward, moveDirection, rotationStep, 0.0f);
 				transform.rotation = Quaternion.LookRotation(newDirection);
 
-				Debug.DrawRay(transform.position, path[0] - transform.position, Color.red);
-				Debug.DrawRay(transform.position, transform.forward, Color.green);
-				Debug.DrawRay(transform.position, newDirection, Color.blue);
-
 				if (Vector3.Distance(transform.position, path[0]) < 0.05f)
 				{
 					path.RemoveAt(0);
@@ -92,8 +91,8 @@ public class AgentPathfinder : MonoBehaviour
 			hasPath = false;
 		}
 
-
-		if (orbitTarget && !pathTraversalEnabled)
+		//orbitDynamicTarget is always set, even if the target is static.
+		if (orbitDynamicTarget && !pathTraversalEnabled)
 		{
 			OrbitTarget();
 		}
@@ -183,9 +182,9 @@ public class AgentPathfinder : MonoBehaviour
 
 	}
 
-	public void SetOrbitTarget(GameObject target)
+	public void SetOrbitTarget(GameObject target, bool isStatic = true)
 	{
-		orbitTarget = target;
+		orbitDynamicTarget = target;
 
 		//need the colliderManager to figure out the size of the object
 		colliderManager colliderMgr;
@@ -196,27 +195,36 @@ public class AgentPathfinder : MonoBehaviour
 
 		Vector3 targetSize = colliderMgr.size;
 		orbitRadius = Mathf.Max(targetSize.x, targetSize.y, targetSize.z);
-		orbitRadius *= 1.5f;
+		orbitRadius *= 1.25f;
 
 		orbitRadius = Mathf.Max(orbitRadius, 2.5f);
+
+		orbitStatic = isStatic;
+
+		if(isStatic)
+		{
+			orbitStaticTarget = orbitDynamicTarget.transform.position;
+		}
 	}
 
 	private void OrbitTarget()
 	{
 		//update radius to be a function of the objects size - can probably re-use collider size calculations
 
+		Vector3 orbitTarget = orbitStatic ? orbitStaticTarget : orbitDynamicTarget.transform.position;
 
 		//Movement
 		// change axis here to avoid always using the same orbit axis. this will be necessary when there are multiple agents per base.
 		// axis = cross product of forward and backward transform vectors? What does that look like?
-		transform.RotateAround(orbitTarget.transform.position, axis, orbitRotationSpeed * Time.deltaTime);
-		Vector3 orbitDesiredPosition = (transform.position - orbitTarget.transform.position).normalized * orbitRadius + orbitTarget.transform.position;
+		transform.RotateAround(orbitTarget, axis, orbitRotationSpeed * Time.deltaTime);
+		Vector3 orbitDesiredPosition = (transform.position - orbitTarget).normalized * orbitRadius + orbitTarget;
 		transform.position = Vector3.Slerp(transform.position, orbitDesiredPosition, Time.deltaTime * radiusCorrectionSpeed);
 
 		//Rotation
 		Vector3 relativePos = transform.position - previousPos;
 		Quaternion rotation = Quaternion.LookRotation(relativePos);
 		transform.rotation = Quaternion.Slerp(transform.rotation, rotation, radiusCorrectionSpeed * Time.deltaTime);
+
 		previousPos = transform.position;
 	}
 

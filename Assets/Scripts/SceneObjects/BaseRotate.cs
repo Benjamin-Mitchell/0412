@@ -9,7 +9,7 @@ public class BaseRotate : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+		rotation *= 120;
     }
 
     // Update is called once per frame
@@ -20,6 +20,6 @@ public class BaseRotate : MonoBehaviour
 
 	private void OnRenderObject()
 	{
-		transform.Rotate(rotation);
+		transform.Rotate(rotation * Time.deltaTime);
 	}
 }

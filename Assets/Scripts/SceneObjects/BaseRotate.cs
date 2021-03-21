@@ -6,11 +6,12 @@ using UnityEngine;
 public class BaseRotate : MonoBehaviour
 {
 	public Vector3 rotation;
+	private Vector3 scaledRotation;
     // Start is called before the first frame update
     void Start()
     {
-		rotation *= 120;
-    }
+		scaledRotation = rotation * 120;
+	}
 
     // Update is called once per frame
     void Update()
@@ -20,6 +21,6 @@ public class BaseRotate : MonoBehaviour
 
 	private void OnRenderObject()
 	{
-		transform.Rotate(rotation * Time.deltaTime);
+		transform.Rotate(scaledRotation * Time.deltaTime);
 	}
 }

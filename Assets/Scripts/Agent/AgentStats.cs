@@ -36,6 +36,7 @@ public class AgentStats : MonoBehaviour
 	"Solomon", "Frodo", "Samwise", "Merry", "Pippin", "Mitchell", "Choo", "The Novelty",
 	"The Binding", "Breaker", "Carbon", "Beikell", "Durex", "Jeeves", "Icey", "Beedle",
 	"Woodhouse", "Obama", "Hope", "Don Quixote", "Gatsby", "Lord", "The Mockingbird", "Chandler",
-	"Billy"};
+	"Billy", "Matas", "Champ", "Keeper", "Tater", "Coloniser", "Shallon", "TripleLift", "Camel",
+	"Agony", "The Challenge", "Voyager", "Sanction", "Fearless", "Catastrophe", "Zamarin", "Jaxon"};
 	
 }

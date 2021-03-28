@@ -36,6 +36,8 @@ public class AgentPathfinder : MonoBehaviour
 	private Vector3 orbitStaticTarget;
 	private bool orbitStatic = true;
 
+	private LayerMask targetLayerMask;
+	float maxRayDistance;
 	// Start is called before the first frame update
 	void Awake()
     {
@@ -46,6 +48,12 @@ public class AgentPathfinder : MonoBehaviour
 
 	private void Start()
 	{
+		//agent rays cant collide with other agents.
+		targetLayerMask =~ LayerMask.GetMask("Agent");
+
+		//max ray distance is based on the size of the map. Plus offset because safety.
+		maxRayDistance = GameManager.Instance.maxMapDistance + 10.0f;
+
 		oldPosition = transform.position;
 	}
 
@@ -53,26 +61,22 @@ public class AgentPathfinder : MonoBehaviour
 	void Update()
     {
         actionTime += Time.deltaTime;
-		
+
+		Debug.Log("New Frame, no. : " + Time.frameCount);
+
 		if (path.Count != 0)
         {
+			Debug.Log("Path Count not 0: " + path.Count);
 			if (pathTraversalEnabled)
 			{
-				//transform.position = Vector3.MoveTowards(transform.position, path[0], moveSpeed * Time.deltaTime);
-				transform.position = Vector3.MoveTowards(transform.position, transform.position + transform.forward, moveSpeed * Time.deltaTime);
-				stats.distanceTravelled += Vector3.Distance(transform.position, oldPosition);
-				oldPosition = transform.position;
+				Debug.Log("Path Traversal enabled");
+				//Debug.Log("Path Traversal enabled!! Path Length: " + path.Count);
 
-				//transform.LookAt(path[0]);
-
-				//smoother rotation, so the units don't jerk towards their target.
-				float rotationStep = rotationSpeed * Time.deltaTime;
-				Vector3 moveDirection = path[0] - transform.position;
-				Vector3 newDirection = Vector3.RotateTowards(transform.forward, moveDirection, rotationStep, 0.0f);
-				transform.rotation = Quaternion.LookRotation(newDirection);
+				CustomMoveTowards(path[0]);
 
 				if (Vector3.Distance(transform.position, path[0]) < 0.05f)
 				{
+					Debug.Log("Next Path");
 					path.RemoveAt(0);
 
 					//if a raycast in the direction of the next path node hits nothing, skip this path node
@@ -101,7 +105,7 @@ public class AgentPathfinder : MonoBehaviour
 	public void SetPath(Vector3 target)
 	{
 		//do a ray-cast first, this is more optimal if possible.
-		if (!Physics.Raycast(transform.position, target - transform.position, out RaycastHit hit))
+		if (!Physics.Raycast(transform.position, target - transform.position, out RaycastHit hit, maxRayDistance, targetLayerMask))
 		{
 			Debug.DrawRay(transform.position, target - transform.position);
 			// target is in direct vision
@@ -109,6 +113,7 @@ public class AgentPathfinder : MonoBehaviour
 			{
 				//ray-cast hit nothing... so it has a straight path to a target with no gameobject.
 				actionTime = pathUpdateStep;
+				Debug.Log("Set single node path 2");
 				SetSingleNodePath(target);
 				hasPath = true;
 				return;
@@ -122,6 +127,7 @@ public class AgentPathfinder : MonoBehaviour
 		}
 
 		// raycast failed, do 3d A*.
+		Debug.Log("Set path Nullify 2");
 		NullifyPath();
 
 		//this kicks off a thread to calculate a path.
@@ -140,22 +146,24 @@ public class AgentPathfinder : MonoBehaviour
 
     public void SetPath(GameObject target)
     {
-
+		Debug.Log("Set path 1");
 		Debug.DrawRay(transform.position, target.transform.position - transform.position);
 		//do a ray-cast first, this is more optimal if possible. returns true if hits a collider
-		if (Physics.Raycast(transform.position, target.transform.position - transform.position, out RaycastHit hit))
+		if (Physics.Raycast(transform.position, target.transform.position - transform.position, out RaycastHit hit, maxRayDistance , targetLayerMask))
         {
-
+			Debug.Log("Raycast passed");
 			// target is in direct vision
 			if (hit.collider.gameObject == target)
             {
                 actionTime = pathUpdateStep;
-                SetSingleNodePath(target.transform.position);
+				Debug.Log("Set single node path 1, hit target: " + target.name);
+				SetSingleNodePath(target.transform.position);
 				hasPath = true;
                 return;
             }
 
 			//ELSE, something else was in the way.
+			Debug.Log("Set path Nullify 1, missed target: " + target.name + " hit: " + hit.collider.gameObject.name);
 
 			//only update the path ever pathUpdateStep seconds.
 			if (actionTime < pathUpdateStep)
@@ -163,6 +171,7 @@ public class AgentPathfinder : MonoBehaviour
 				return;
 			}
 
+			
 			// raycast failed, do 3d A*.
 			NullifyPath();
 			
@@ -178,7 +187,9 @@ public class AgentPathfinder : MonoBehaviour
 			}
 
 			actionTime = 0;
+			return;
         }
+		Debug.Log("Raycast failed");
 
 	}
 
@@ -216,16 +227,40 @@ public class AgentPathfinder : MonoBehaviour
 		//Movement
 		// change axis here to avoid always using the same orbit axis. this will be necessary when there are multiple agents per base.
 		// axis = cross product of forward and backward transform vectors? What does that look like?
-		transform.RotateAround(orbitTarget, axis, orbitRotationSpeed * Time.deltaTime);
-		Vector3 orbitDesiredPosition = (transform.position - orbitTarget).normalized * orbitRadius + orbitTarget;
-		transform.position = Vector3.Slerp(transform.position, orbitDesiredPosition, Time.deltaTime * radiusCorrectionSpeed);
+		Vector3 orbitPos = GetRotateAroundPos(orbitTarget, axis, orbitRotationSpeed * Time.deltaTime);
 
-		//Rotation
-		Vector3 relativePos = transform.position - previousPos;
-		Quaternion rotation = Quaternion.LookRotation(relativePos);
-		transform.rotation = Quaternion.Slerp(transform.rotation, rotation, radiusCorrectionSpeed * Time.deltaTime);
+		CustomMoveTowards(orbitPos);
 
-		previousPos = transform.position;
+		//previousPos = transform.position;
+
+		Debug.Log("Orbiting!!!");
+	}
+
+	private void CustomMoveTowards(Vector3 target)
+	{
+		Debug.Log("Custom Move Towards");
+		//transform.position = Vector3.MoveTowards(transform.position, path[0], moveSpeed * Time.deltaTime);
+		transform.position = Vector3.MoveTowards(transform.position, transform.position + transform.forward, moveSpeed * Time.deltaTime);
+		stats.distanceTravelled += Vector3.Distance(transform.position, oldPosition);
+		oldPosition = transform.position;
+
+		//smoother rotation, so the units don't jerk towards their target.
+		float rotationStep = rotationSpeed * Time.deltaTime;
+		Vector3 moveDirection = target - transform.position;
+		Vector3 newDirection = Vector3.RotateTowards(transform.forward, moveDirection, rotationStep, 0.0f);
+		transform.rotation = Quaternion.LookRotation(newDirection);
+	}
+
+	private Vector3 GetRotateAroundPos(Vector3 center, Vector3 axis, float angle)
+	{
+		Vector3 ret;
+		Vector3 pos = transform.position;
+		Quaternion rot = Quaternion.AngleAxis(angle, axis); // get the desired rotation
+		Vector3 dir = pos - center; // find current direction relative to center
+		dir = rot * dir; // rotate the direction
+
+		ret = center + dir;
+		return ret;
 	}
 
 	public void AllowPathTraversal(bool b)
@@ -241,15 +276,17 @@ public class AgentPathfinder : MonoBehaviour
 
 	public void SetSingleNodePath(Vector3 target)
     {
-        //This is really innefficient. Don't need to be remaking and nullifying the Vector array for this.
-        NullifyPath();
-        path.Add(target);
+		Debug.Log("Setting Single Node Path");
+		//This is really innefficient. Don't need to be remaking and nullifying the Vector array for this.
+		NullifyPath();
 
+        path.Add(target);
     }
 
     public void NullifyPath()
     {
-        if(path.Count != 0)
+		Debug.Log("Nullifying Path");
+		if (path.Count != 0)
             path.Clear();
     }
 

@@ -9,6 +9,8 @@ public class GameManager : Singleton<GameManager>
     public int mapY = 10;
     public int mapZ = 10;
 
+	public float maxMapDistance;
+
     public bool finishedIntroduction = false;
 
 	private Value units = 10000000;
@@ -28,11 +30,14 @@ public class GameManager : Singleton<GameManager>
 
 	void Awake()
     {
-        //this is where loading should happen
-    }
+		maxMapDistance = Mathf.Sqrt((mapX * mapX) + (mapY * mapY) + (mapZ * mapZ));
 
-    // Start is called before the first frame update
-    void Start()
+		Debug.Log("MaxMapDistance: " + maxMapDistance);
+		//this is where loading should happen
+	}
+
+	// Start is called before the first frame update
+	void Start()
     {
 		unitsText.text = units.GetStringVal();
 

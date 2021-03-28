@@ -22,8 +22,6 @@ public class colliderManager : MonoBehaviour
 			mesh = meshToMeasure.mesh;
 
 		CalculateSize();
-
-		Debug.Log(gameObject.name + "'s size is " + size);
 	}
 
 	private void GetMeshColliderSize()

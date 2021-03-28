@@ -137,10 +137,18 @@ public class AgentGameplay : MonoBehaviour
 				break;
 			case State.Idle:
 
+				//this is actually just to stop it searching for a path too often.
+				loadingTime += Time.deltaTime;
+
 				//check for resources
 				if (resourceTarget != null)
 				{
-					agentPathfinding.SetPath(resourceTarget.gameObject);
+					if(loadingTime > 1.0f)
+					{
+						agentPathfinding.SetPath(resourceTarget.gameObject);
+						loadingTime = 0.0f;
+					}
+						
 
 					if (agentPathfinding.hasPath)
 					{
@@ -151,10 +159,6 @@ public class AgentGameplay : MonoBehaviour
 				{
 					resourceTarget = resourceSpawner.RequestResource();
 				}
-
-
-				//chill out
-				//agentPathfinding.OrbitTarget(associatedBase.gameObject);
 
 				break;
 

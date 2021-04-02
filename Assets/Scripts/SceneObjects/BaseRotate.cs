@@ -19,6 +19,11 @@ public class BaseRotate : MonoBehaviour
 		//transform.Rotate(rotation);
     }
 
+	public void OnValidate()
+	{
+		scaledRotation = rotation * 120;
+	}
+
 	private void OnRenderObject()
 	{
 		transform.Rotate(scaledRotation * Time.deltaTime);

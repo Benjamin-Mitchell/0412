@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -25,6 +26,8 @@ public class BuildManager : MonoBehaviour
     bool pickedBuildTarget = false;
     float rotationSpeed = 1.0f;
 
+	int nextBaseID = 0;
+
     private Base referanceBase;
     void Start()
     {
@@ -43,13 +46,41 @@ public class BuildManager : MonoBehaviour
             IntroLoop();
         else
             DefaultPlayLoop();
-    }
+    }	
 
-    /// <summary>
-    /// INTRO SECTION START
-    /// </summary>
+	void BuildBase(GameObject asset, Vector3 pos, out Base b)
+	{
+		Debug.Log("Instantiating a base!");
+		beingBuilt = Instantiate(asset, pos, Quaternion.identity);
+		b = beingBuilt.GetComponent<Base>();
+		//allBases.Add(b);
 
-    void IntroLoop()
+		b.ID = nextBaseID;
+		nextBaseID++;
+	}
+
+	public void LoadBases(List<SaveManager.BaseData> bases, TimeSpan difference)
+	{
+		Debug.Log("Loading Bases! bases count: " + bases.Count);
+
+		for (int i = 0; i < bases.Count; i++)
+		{
+			SaveManager.BaseData data = bases[i];
+
+			GameObject asset = Resources.Load("Base_" + data.baseType) as GameObject;
+
+			BuildBase(asset, data.position, out Base b);
+			allBases.Add(b);
+			b.LoadSetup(data);
+		}
+	}
+
+
+	/// <summary>
+	/// INTRO SECTION START
+	/// </summary>
+
+	void IntroLoop()
     {
         if(building)
         {
@@ -60,8 +91,11 @@ public class BuildManager : MonoBehaviour
     public void BeginIntroBuild()
     {
         Vector3 defaultStartPosition = new Vector3(gameManager.mapX / 2.0f, gameManager.mapY / 2.0f, gameManager.mapZ / 2.0f);
-        beingBuilt = Instantiate(assetToBuild, defaultStartPosition, Quaternion.identity);
-		allBases.Add(beingBuilt.GetComponent<Base>());
+
+		
+		BuildBase(assetToBuild, defaultStartPosition, out Base b);
+		//beingBuilt = Instantiate(assetToBuild, defaultStartPosition, Quaternion.identity);
+		allBases.Add(b);
 
         _UIManager.DisableBuildUI();
 
@@ -184,8 +218,8 @@ public class BuildManager : MonoBehaviour
 		string s = isFreshBuild ? baseType : refBase.baseType;
 		assetToBuild = Resources.Load("Base_" + s) as GameObject;
 
-		beingBuilt = Instantiate(assetToBuild, spawnPos, Quaternion.identity);
-		beingBuiltBaseComp = beingBuilt.GetComponent<Base>();
+		//beingBuilt = Instantiate(assetToBuild, spawnPos, Quaternion.identity);
+		BuildBase(assetToBuild, spawnPos, out beingBuiltBaseComp);
 
 		int newStage = isFreshBuild ? 0 : refBase.stage - 1;
         beingBuiltBaseComp.stage = newStage;
@@ -254,7 +288,7 @@ public class BuildManager : MonoBehaviour
 		//update sphere position for new base (in its final position)
 		beingBuiltBaseComp.buildSphere.transform.position = beingBuiltBaseComp.gameObject.transform.position;
 
-        beingBuilt.transform.eulerAngles = new Vector3(Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f));
+        beingBuilt.transform.eulerAngles = new Vector3(UnityEngine.Random.Range(0.0f, 360.0f), UnityEngine.Random.Range(0.0f, 360.0f), UnityEngine.Random.Range(0.0f, 360.0f));
 
 		if(!isFreshBuild)
 			referanceBase.HeldResource -= referanceBase.ReqToBuild;

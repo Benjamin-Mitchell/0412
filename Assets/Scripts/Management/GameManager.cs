@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,92 +29,27 @@ public class GameManager : Singleton<GameManager>
 	[SerializeField]
 	private Text unitsText;
 
+	public SaveManager saveManager;
+
 	void Awake()
     {
 		maxMapDistance = Mathf.Sqrt((mapX * mapX) + (mapY * mapY) + (mapZ * mapZ));
+		
 
-		Debug.Log("MaxMapDistance: " + maxMapDistance);
-		//this is where loading should happen
+		//this is where loading happens (if there is anything to load)
+		saveManager = new SaveManager();
+		if(saveManager.Load(out List<SaveManager.BaseData> basesData, out TimeSpan difference))
+		{
+			Debug.Log("Game Manager Loading!");
+			BuildManager buildManager = GameObject.Find("BuildManager").GetComponent<BuildManager>();
+			buildManager.LoadBases(basesData, difference);
+		}
 	}
 
 	// Start is called before the first frame update
 	void Start()
     {
 		unitsText.text = units.GetStringVal();
-
-		//Value val = 100000;
-		
-		//Debug.Log("initial Value: " + val.GetStringVal());
-		
-		//Value temp = 1000;
-		////val += 1000;
-		
-		////Debug.Log("After adding 1000: " + val.GetStringVal());
-
-		////val -= 1000;
-		
-		////Debug.Log("After subtracting 1000: " + val.GetStringVal());
-
-		////val -= 1000000000;
-
-		////Debug.Log("After subtracting 1000000000: " + val.GetStringVal());
-
-		////val += 100000;
-
-		////Debug.Log("After adding 100000(100k): " + val.GetStringVal());
-
-		//val -= 99999.0f;
-
-		//Debug.Log("After substracting 99999(99.999k): " + val.GetStringVal());
-		//Debug.Log("val.val: " + val.val);
-
-		//val += temp;
-		
-		//Debug.Log("After adding 1k: " + val.GetStringVal());
-		
-		//val -= temp;
-		
-		//Debug.Log("After subtracting 1k: " + val.GetStringVal());
-		
-		//val *= 5;
-		
-		//Debug.Log("After multiplying by 5: " + val.GetStringVal());
-		
-		//val /= 5;
-		
-		//Debug.Log("After dividing by 5: " + val.GetStringVal());
-		
-		//temp = 5;
-		//val *= temp;
-		
-		//Debug.Log("After multiplying by 5(Value): " + val.GetStringVal());
-		
-		//val /= temp;
-		
-		//Debug.Log("After dividing by 5(Value): " + val.GetStringVal());
-		
-		//temp = 5000;
-		//Value tempTwo = 5000000;
-		
-		
-		//Debug.Log("Is 5000 greater than 5000000?:" + (temp > tempTwo ? "Yes!" : "No!"));
-		//Debug.Log("Is 5000000 greater than 5000?:" + (tempTwo > temp ? "Yes!" : "No!"));
-		
-		
-		//Debug.Log("Is 5000 less than 5000000?:" + (temp < tempTwo ? "Yes!" : "No!"));
-		//Debug.Log("Is 5000000 less than 5000?:" + (tempTwo < temp ? "Yes!" : "No!"));
-
-		//Debug.Log( tempTwo.ToFloat() + " / " + temp.ToFloat() + " is "+ (tempTwo / temp).ToFloat());
-		//Debug.Log("Ben Test ToFloat! And Create a ToDouble!");
-
-		//temp = 560;
-		//tempTwo = 33400;
-		
-		//Debug.Log("A random number between 560 and 33400 is:" + Value.RandomRange(temp, tempTwo).GetStringVal());
-		
-		//temp = 10;
-		
-		//Debug.Log("10 to the power of 5 is: " + Value.Pow(temp, 5).GetStringVal());
 	}
 
     // Update is called once per frame
@@ -191,6 +127,14 @@ public class GameManager : Singleton<GameManager>
 	public float GetUnitReturnRate()
 	{
 		return unitReturnRate;
+	}
+
+	private void OnApplicationQuit()
+	{
+		//This also happens when closing the editor.
+		BuildManager buildManager = GameObject.Find("BuildManager").GetComponent<BuildManager>();
+
+		saveManager.Save(buildManager.allBases);
 	}
 
 }

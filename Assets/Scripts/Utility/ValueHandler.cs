@@ -288,6 +288,18 @@ public class Value
 			((int)denotation > 0 ? denotation.ToString() : "");
 	}
 
+	//do not use apart from for saving the game
+	public float GetRawVal()
+	{
+		return val;
+	}
+
+	//do not use apart from for saving the game
+	public int GetRawDenotation()
+	{
+		return (int)denotation;
+	}
+
     // Start is called before the first frame update
     void Start()
     {

@@ -34,7 +34,13 @@ public class Base : MonoBehaviour
 
 	private List<AgentGameplay> agents = new List<AgentGameplay>();
 
+	[System.NonSerialized]
+	public int numAgents = 0;
+
 	private GameManager gameManager;
+
+	//used to identify the base during save/load
+	public int ID;
 
     private void Awake()
     {
@@ -51,9 +57,8 @@ public class Base : MonoBehaviour
 
         baseStages[stage].SetActive(true);
 
-        AgentGameplay agent = Instantiate(agentPrefab, transform.position + transform.forward, Quaternion.identity).GetComponent<AgentGameplay>();
-        agent.setBase(this);
-        agents.Add(agent);
+		if(numAgents == 0)
+			AddAgent(agentPrefab, transform.position + transform.forward, out AgentGameplay a);
 
         reqToUpgrade = requiredToUpgrade();
 
@@ -72,6 +77,14 @@ public class Base : MonoBehaviour
             heldResource += 100;
         }
     }
+
+	public void AddAgent(GameObject prefab, Vector3 position, out AgentGameplay a)
+	{
+		a = Instantiate(prefab, position, Quaternion.identity).GetComponent<AgentGameplay>();
+		a.setBase(this);
+		agents.Add(a);
+		numAgents++;
+	}
 
     public void UpgradeBase()
     {
@@ -93,6 +106,37 @@ public class Base : MonoBehaviour
         bool val = stage < 4 ? false : true;
         return val;
     }
+
+	public void LoadSetup(SaveManager.BaseData bData)
+	{
+		//extract information from saved BaseData
+		ID = bData.ID;
+		stage = bData.currentStage;
+		baseType = bData.baseType;
+		tapSeconds = bData.boostTime;
+		heldResource = bData.heldResource;
+
+		int agentsToLoad = bData.numAgents;
+
+		baseStages[stage].SetActive(true);
+
+		GameObject agentPrefab = (GameObject)Resources.Load("Agent_" + baseType, typeof(GameObject));
+
+		//agents are spawned in a circle around base when loading. might be better ways to do this in the future.
+		//e.g. spawn en-route to resources or come out of the base one-by-one.
+		float spawnRadius = 4.0f;
+		
+		for (int i = 0; i < agentsToLoad; i++)
+		{
+			float theta = (i * (2 * Mathf.PI) / agentsToLoad);
+			float x = transform.position.x + (spawnRadius * Mathf.Cos(theta));
+			float z = transform.position.z + (spawnRadius * Mathf.Sin(theta));
+			Vector3 newAgentPos = new Vector3(x, transform.position.y, z);
+			AddAgent(agentPrefab, newAgentPos, out AgentGameplay a);
+			a.setStage(stage);
+		}
+			
+	}
 
 	public void AddResourcesOverTime(Value val, float time)
 	{

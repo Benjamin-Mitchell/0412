@@ -62,27 +62,19 @@ public class AgentPathfinder : MonoBehaviour
     {
         actionTime += Time.deltaTime;
 
-		Debug.Log("New Frame, no. : " + Time.frameCount);
-
 		if (path.Count != 0)
         {
-			Debug.Log("Path Count not 0: " + path.Count);
 			if (pathTraversalEnabled)
 			{
-				Debug.Log("Path Traversal enabled");
-				//Debug.Log("Path Traversal enabled!! Path Length: " + path.Count);
-
 				CustomMoveTowards(path[0]);
 
 				if (Vector3.Distance(transform.position, path[0]) < 0.05f)
 				{
-					Debug.Log("Next Path");
 					path.RemoveAt(0);
 
 					//if a raycast in the direction of the next path node hits nothing, skip this path node
 					while (!Physics.Raycast(transform.position, path[1] - transform.position, 1000.0f))
 					{
-						Debug.Log("Skipping a step!");
 						path.RemoveAt(0);
 						if (path.Count <= 1)
 							break;
@@ -113,7 +105,6 @@ public class AgentPathfinder : MonoBehaviour
 			{
 				//ray-cast hit nothing... so it has a straight path to a target with no gameobject.
 				actionTime = pathUpdateStep;
-				Debug.Log("Set single node path 2");
 				SetSingleNodePath(target);
 				hasPath = true;
 				return;
@@ -127,7 +118,6 @@ public class AgentPathfinder : MonoBehaviour
 		}
 
 		// raycast failed, do 3d A*.
-		Debug.Log("Set path Nullify 2");
 		NullifyPath();
 
 		//this kicks off a thread to calculate a path.
@@ -146,25 +136,21 @@ public class AgentPathfinder : MonoBehaviour
 
     public void SetPath(GameObject target)
     {
-		Debug.Log("Set path 1");
 		Debug.DrawRay(transform.position, target.transform.position - transform.position);
 		//do a ray-cast first, this is more optimal if possible. returns true if hits a collider
 		if (Physics.Raycast(transform.position, target.transform.position - transform.position, out RaycastHit hit, maxRayDistance , targetLayerMask))
         {
-			Debug.Log("Raycast passed");
 			// target is in direct vision
 			if (hit.collider.gameObject == target)
             {
                 actionTime = pathUpdateStep;
-				Debug.Log("Set single node path 1, hit target: " + target.name);
 				SetSingleNodePath(target.transform.position);
 				hasPath = true;
                 return;
             }
 
 			//ELSE, something else was in the way.
-			Debug.Log("Set path Nullify 1, missed target: " + target.name + " hit: " + hit.collider.gameObject.name);
-
+			
 			//only update the path ever pathUpdateStep seconds.
 			if (actionTime < pathUpdateStep)
 			{
@@ -189,7 +175,8 @@ public class AgentPathfinder : MonoBehaviour
 			actionTime = 0;
 			return;
         }
-		Debug.Log("Raycast failed");
+
+		Debug.Log("Raycast failed?? This is a problem.");
 
 	}
 
@@ -232,13 +219,10 @@ public class AgentPathfinder : MonoBehaviour
 		CustomMoveTowards(orbitPos);
 
 		//previousPos = transform.position;
-
-		Debug.Log("Orbiting!!!");
 	}
 
 	private void CustomMoveTowards(Vector3 target)
 	{
-		Debug.Log("Custom Move Towards");
 		//transform.position = Vector3.MoveTowards(transform.position, path[0], moveSpeed * Time.deltaTime);
 		transform.position = Vector3.MoveTowards(transform.position, transform.position + transform.forward, moveSpeed * Time.deltaTime);
 		stats.distanceTravelled += Vector3.Distance(transform.position, oldPosition);
@@ -276,7 +260,6 @@ public class AgentPathfinder : MonoBehaviour
 
 	public void SetSingleNodePath(Vector3 target)
     {
-		Debug.Log("Setting Single Node Path");
 		//This is really innefficient. Don't need to be remaking and nullifying the Vector array for this.
 		NullifyPath();
 
@@ -285,7 +268,6 @@ public class AgentPathfinder : MonoBehaviour
 
     public void NullifyPath()
     {
-		Debug.Log("Nullifying Path");
 		if (path.Count != 0)
             path.Clear();
     }

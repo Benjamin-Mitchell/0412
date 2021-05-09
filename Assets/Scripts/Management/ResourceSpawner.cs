@@ -33,7 +33,7 @@ public class ResourceSpawner : MonoBehaviour
         maxSpawnTime = spawnRate + ((spawnRateVariation/100.0f)*spawnRate);
 
 
-        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime) / gameManager.GetResourceSpawnRate();
+        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime) / gameManager.resourceSpawnRate;
 	}
 
     // Update is called once per frame
@@ -55,9 +55,9 @@ public class ResourceSpawner : MonoBehaviour
 
 		if (numBases < 1)
 			return;
-
+		
 		spawnTimer = .0f;
-        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime) / gameManager.GetResourceSpawnRate();
+        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime) / gameManager.resourceSpawnRate;
 
         //resources will move across the Z axis (constant X and Y from start)
         Vector3 spawnPos = new Vector3(

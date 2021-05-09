@@ -59,10 +59,14 @@ public class BuildManager : MonoBehaviour
 		nextBaseID++;
 	}
 
-	public void LoadBases(List<SaveManager.BaseData> bases, TimeSpan difference)
+	public void LoadBases(List<SaveManager.BaseData> bases, TimeSpan difference, int totalAgents)
 	{
+		gameManager = GameManager.Instance;
 		Debug.Log("Loading Bases! bases count: " + bases.Count);
 
+		ResourceSpawner resourceSpawner = GameObject.Find("ResourceSpawner").GetComponent<ResourceSpawner>();
+
+		float totalRes = 0.0f;
 		for (int i = 0; i < bases.Count; i++)
 		{
 			SaveManager.BaseData data = bases[i];
@@ -71,7 +75,28 @@ public class BuildManager : MonoBehaviour
 
 			BuildBase(asset, data.position, out Base b);
 			allBases.Add(b);
-			b.LoadSetup(data);
+			b.LoadSetup(data, difference, resourceSpawner.spawnRate, totalAgents, out float maxResourcesCollected);
+			totalRes += maxResourcesCollected;
+		}
+
+		//total available spawns
+		float A = (100 / (resourceSpawner.spawnRate / gameManager.resourceSpawnRate) / (float)totalAgents);
+
+		float ratioAvailable = A / totalRes;
+
+		if (ratioAvailable > 1.0f)
+		{
+			ratioAvailable = 1.0f;
+		}
+		else
+		{
+			Debug.Log("Not enough resources availble for maximum returns. Upgrade Resource spawn rate!");
+		}
+
+		//Load setup 2 needs information gathered from all bases/agents to calculate gains.
+		for (int i = 0; i < allBases.Count; i++)
+		{
+			allBases[i].LoadSetupFinalize(ratioAvailable);
 		}
 	}
 

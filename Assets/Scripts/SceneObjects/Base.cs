@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -15,6 +16,8 @@ public class Base : MonoBehaviour
     public Value ReqToUpgrade { get { return reqToUpgrade; } set { reqToUpgrade = value; } }
 	private Value reqToBuild = 0;
 	public Value ReqToBuild { get { return reqToBuild; } set { reqToBuild = value; } }
+
+	private Value maxLoadGain = 0.0f;
 
 	public int stage = 0;
     public int numBuilds = 0;
@@ -107,7 +110,7 @@ public class Base : MonoBehaviour
         return val;
     }
 
-	public void LoadSetup(SaveManager.BaseData bData)
+	public void LoadSetup(SaveManager.BaseData bData, TimeSpan difference, float spawnRate, int totalAgents, out float maxResourceCollect)
 	{
 		//extract information from saved BaseData
 		ID = bData.ID;
@@ -119,6 +122,29 @@ public class Base : MonoBehaviour
 		int agentsToLoad = bData.numAgents;
 
 		baseStages[stage].SetActive(true);
+
+		gameManager = GameManager.Instance;
+
+		//resource gained should be a function of:
+		//	- Time difference,
+		//	- Num agents & move speeds,
+		//  - Spawn rate of resource, spawn rate is in seconds.
+		//
+		// Resources gained / 100 secs @ 1 move speed. (R) - 1.25
+		// Available resources per 100 sec: ((100 / spawn rate)/ gameManager.spawnrate) / (number of agents) (A)
+		// Number of 100 sec intervals passed: time diff in seconds / 100(T)
+		// Average resource Value(V)
+		// 
+		// gained = T * (R * moveSpeed) * (A * V)
+
+		float R = 1.4f;
+		float A = (100 / (spawnRate / gameManager.resourceSpawnRate) / (float)totalAgents);
+		double t = difference.TotalSeconds / 100.0;
+		float T = Mathf.Min((float)t, gameManager.maxPeriodInactive);
+		float V = 5;
+
+		float gain = 0.0f;
+		maxResourceCollect = 0.0f;
 
 		GameObject agentPrefab = (GameObject)Resources.Load("Agent_" + baseType, typeof(GameObject));
 
@@ -134,13 +160,30 @@ public class Base : MonoBehaviour
 			Vector3 newAgentPos = new Vector3(x, transform.position.y, z);
 			AddAgent(agentPrefab, newAgentPos, out AgentGameplay a);
 			a.setStage(stage);
+
+			float moveSpeed = a.gameObject.GetComponent<AgentPathfinder>().moveSpeed;
+
+			float agentMaxRes = R * moveSpeed;
+
+			maxResourceCollect += agentMaxRes;
+			float test = T * agentMaxRes * (/*A * */ V);
+			Debug.Log("This agent earned max " + test + " resources while you were away!");
+			gain += test;
 		}
-			
+
+		maxLoadGain = gain;
+		//heldResource += gain;
+	}
+
+	//actual resource gain needs to take into account globally available resource after all other agents & bases take a slice.
+	public void LoadSetupFinalize(float ratioAvailable)
+	{
+		heldResource += (maxLoadGain * ratioAvailable);
 	}
 
 	public void AddResourcesOverTime(Value val, float time)
 	{
-		float percent = (1.0f + (increasePercent / 100.0f)) * gameManager.GetResourceValueMultiplier();
+		float percent = (1.0f + (increasePercent / 100.0f)) * gameManager.resourceValueMultiplier;
 
 		Value mulVal = val * percent;
 

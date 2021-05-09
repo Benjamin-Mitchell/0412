@@ -87,9 +87,9 @@ public class UIManager : MonoBehaviour
     void Start()
     {
 		gameManager = GameManager.Instance;
-		spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.GetResourceSpawnRate() + "\nUpgrade (" + gameManager.spawnRateIncreaseCost + " U)";
-		resourceValueUpgradeText.text = "Resource Value Multiplier: " + gameManager.GetResourceValueMultiplier() + "\nUpgrade (" + gameManager.resourceValueIncreaseCost + " U)";
-		unitReturnRateUpgradeText.text = "Unit Return Rate: " + gameManager.GetUnitReturnRate() + "\nUpgrade (" + gameManager.unitReturnIncreaseCost + " U)";
+		spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.resourceSpawnRate + "\nUpgrade (" + gameManager.spawnRateIncreaseCost + " U)";
+		resourceValueUpgradeText.text = "Resource Value Multiplier: " + gameManager.resourceValueMultiplier + "\nUpgrade (" + gameManager.resourceValueIncreaseCost + " U)";
+		unitReturnRateUpgradeText.text = "Unit Return Rate: " + gameManager.unitReturnRate + "\nUpgrade (" + gameManager.unitReturnIncreaseCost + " U)";
 
 	}
 
@@ -323,7 +323,7 @@ public class UIManager : MonoBehaviour
 	{
 		if(gameManager.IncrementSpawnRate())
 		{
-			spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.GetResourceSpawnRate() + "\nUpgrade (" + gameManager.spawnRateIncreaseCost + " U)";
+			spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.resourceSpawnRate + "\nUpgrade (" + gameManager.spawnRateIncreaseCost + " U)";
 		}
 	}
 
@@ -331,7 +331,7 @@ public class UIManager : MonoBehaviour
 	{
 		if (gameManager.IncrementValueMultiplier())
 		{
-			resourceValueUpgradeText.text = "Resource Value Multiplier: " + gameManager.GetResourceValueMultiplier() + "\nUpgrade (" + gameManager.resourceValueIncreaseCost + " U)";
+			resourceValueUpgradeText.text = "Resource Value Multiplier: " + gameManager.resourceValueMultiplier + "\nUpgrade (" + gameManager.resourceValueIncreaseCost + " U)";
 		}
 	}
 
@@ -339,7 +339,7 @@ public class UIManager : MonoBehaviour
 	{
 		if (gameManager.IncrementUnitReturn())
 		{
-			unitReturnRateUpgradeText.text = "Unit Return Rate: " + gameManager.GetUnitReturnRate() + "\nUpgrade (" + gameManager.unitReturnIncreaseCost + " U)";
+			unitReturnRateUpgradeText.text = "Unit Return Rate: " + gameManager.unitReturnRate + "\nUpgrade (" + gameManager.unitReturnIncreaseCost + " U)";
 		}
 	}
 

@@ -21,10 +21,20 @@ public class SaveManager
 	//e.g. total resource, upgrades purchased etc.
 	float totalResource;
 
-	public void Save(List<Base> allBases)
+	public void Save(List<Base> allBases, GameManager gameManager)
 	{
 		//time when last quit.
 		PlayerPrefs.SetString("TimeString", System.DateTime.Now.ToBinary().ToString());
+
+		//Game Manager Variables
+		//Spawn Rate
+		PlayerPrefs.SetFloat("SpawnRate", gameManager.resourceSpawnRate);
+
+		//Value Multiplier
+		PlayerPrefs.SetFloat("ValueMultiplier", gameManager.resourceValueMultiplier);
+
+		//Unit Return Rate
+		PlayerPrefs.SetFloat("UnitReturnRate", gameManager.unitReturnRate);
 
 		//Number of bases saved
 		PlayerPrefs.SetInt("NumberOfBases", allBases.Count);
@@ -64,12 +74,14 @@ public class SaveManager
 	}
 
 	//return true if loads successfully
-	public bool Load(out List<BaseData> bases, out TimeSpan difference)
+	public bool Load(GameManager gameManager, out List<BaseData> bases, out TimeSpan difference, out int totalAgents)
 	{
 		Debug.Log("Loading!");
 
 		bases = new List<BaseData>();
 		difference = new TimeSpan();
+
+		totalAgents = 0;
 		//if nothing has been saved.... this is the first time.
 		if (!PlayerPrefs.HasKey("NumberOfBases"))
 			return false;
@@ -87,7 +99,21 @@ public class SaveManager
 		//how long since last close
 		difference = System.DateTime.Now.Subtract(oldDate);
 
-		
+		//Game Manager Variables
+		//Spawn Rate
+		gameManager.resourceSpawnRate =  PlayerPrefs.GetFloat("SpawnRate");
+
+		//Value Multiplier
+		gameManager.resourceValueMultiplier = PlayerPrefs.GetFloat("ValueMultiplier");
+
+		//Unit Return Rate
+		gameManager.unitReturnRate = PlayerPrefs.GetFloat("UnitReturnRate");
+
+		gameManager.resourceSpawnRate = 1.0f;
+		gameManager.resourceValueMultiplier = 1.0f;
+		gameManager.unitReturnRate = 0.5f;
+
+
 
 		for (int i = 0; i < numBases; i++)
 		{
@@ -119,6 +145,7 @@ public class SaveManager
 
 			//number of agents
 			b.numAgents = PlayerPrefs.GetInt(baseString + "NumAgents");
+			totalAgents += b.numAgents;
 
 			bases.Add(b);
 		}

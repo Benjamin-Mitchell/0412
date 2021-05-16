@@ -17,14 +17,17 @@ public class GameManager : Singleton<GameManager>
 	private Value units = 10000000;
 
 	private float currentSpawnRateIncrease = 0.4f;
-	private float resourceSpawnRate = 1.0f;
+	public float resourceSpawnRate = 1.0f;
 	public float spawnRateIncreaseCost = 600.0f;
 	
-	private float resourceValueMultiplier = 1.0f;
+	public float resourceValueMultiplier = 1.0f;
 	public float resourceValueIncreaseCost = 800.0f;
 
-	private float unitReturnRate = 0.5f;
+	public float unitReturnRate = 0.5f;
 	public float unitReturnIncreaseCost = 1000.0f;
+
+	//in iterations of 100 seconds
+	public float maxPeriodInactive = 72.0f;
 
 	[SerializeField]
 	private Text unitsText;
@@ -38,11 +41,11 @@ public class GameManager : Singleton<GameManager>
 
 		//this is where loading happens (if there is anything to load)
 		saveManager = new SaveManager();
-		if(saveManager.Load(out List<SaveManager.BaseData> basesData, out TimeSpan difference))
+		if(saveManager.Load(this, out List<SaveManager.BaseData> basesData, out TimeSpan difference, out int totalAgents))
 		{
 			Debug.Log("Game Manager Loading!");
 			BuildManager buildManager = GameObject.Find("BuildManager").GetComponent<BuildManager>();
-			buildManager.LoadBases(basesData, difference);
+			buildManager.LoadBases(basesData, difference, totalAgents);
 		}
 	}
 
@@ -114,27 +117,12 @@ public class GameManager : Singleton<GameManager>
 		return true;
 	}
 
-	public float GetResourceSpawnRate()
-	{
-		return resourceSpawnRate;
-	}
-
-	public float GetResourceValueMultiplier()
-	{
-		return resourceValueMultiplier;
-	}
-
-	public float GetUnitReturnRate()
-	{
-		return unitReturnRate;
-	}
-
 	private void OnApplicationQuit()
 	{
 		//This also happens when closing the editor.
 		BuildManager buildManager = GameObject.Find("BuildManager").GetComponent<BuildManager>();
 
-		saveManager.Save(buildManager.allBases);
+		saveManager.Save(buildManager.allBases, this);
 	}
 
 }

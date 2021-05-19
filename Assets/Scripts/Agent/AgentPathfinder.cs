@@ -260,6 +260,15 @@ public class AgentPathfinder : MonoBehaviour
 
 	public void SetSingleNodePath(Vector3 target)
     {
+		//if previous path is the same, don't nullify.
+		if (path.Count == 1)
+		{
+			if (Vector3.Distance(path[0], target) < 0.05f)
+			{
+				return;
+			}
+		}
+
 		//This is really innefficient. Don't need to be remaking and nullifying the Vector array for this.
 		NullifyPath();
 

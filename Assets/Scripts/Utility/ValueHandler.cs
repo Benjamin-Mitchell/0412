@@ -31,7 +31,7 @@ public class Value
 
 	public Value(float a, Denotation b)
 	{
-		val = a;
+		val = float.IsNaN(a) ? 0 : a;
 		denotation = b;
 	}
 

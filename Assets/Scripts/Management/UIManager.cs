@@ -92,10 +92,10 @@ public class UIManager : MonoBehaviour
     void Start()
     {
 		gameManager = GameManager.Instance;
-		spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.resourceSpawnRate + "\nUpgrade (" + gameManager.spawnRateIncreaseCost + " U)";
-		resourceValueUpgradeText.text = "Resource Value Multiplier: " + gameManager.resourceValueMultiplier + "\nUpgrade (" + gameManager.resourceValueIncreaseCost + " U)";
-		unitReturnRateUpgradeText.text = "Unit Return Rate: " + gameManager.unitReturnRate + "\nUpgrade (" + gameManager.unitReturnIncreaseCost + " U)";
-		MaxInactiveUpgradeText.text = "Max Period Inactive: " + (gameManager.maxPeriodInactive * 100 / 60) + " minutes\nUpgrade (" + gameManager.maxInactiveIncreaseCost + " U)";
+		spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.resourceSpawnRate + "\nUpgrade (" + gameManager.spawnRateIncreaseCost.GetStringVal() + " U)";
+		resourceValueUpgradeText.text = "Resource Value Multiplier: " + gameManager.resourceValueMultiplier + "\nUpgrade (" + gameManager.resourceValueIncreaseCost.GetStringVal() + " U)";
+		unitReturnRateUpgradeText.text = "Unit Return Rate: " + gameManager.unitReturnRate + "\nUpgrade (" + gameManager.unitReturnIncreaseCost.GetStringVal() + " U)";
+		MaxInactiveUpgradeText.text = "Max Period Inactive: " + (gameManager.maxPeriodInactive * 100 / 60) + " minutes\nUpgrade (" + gameManager.maxInactiveIncreaseCost.GetStringVal() + " U)";
 
 	}
 

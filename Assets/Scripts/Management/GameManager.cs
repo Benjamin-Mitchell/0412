@@ -18,17 +18,17 @@ public class GameManager : Singleton<GameManager>
 
 	private float currentSpawnRateIncrease = 0.4f;
 	public float resourceSpawnRate = 1.0f;
-	public float spawnRateIncreaseCost = 600.0f;
+	public Value spawnRateIncreaseCost = 600.0f;
 	
 	public float resourceValueMultiplier = 1.0f;
-	public float resourceValueIncreaseCost = 800.0f;
+	public Value resourceValueIncreaseCost = 800.0f;
 
 	public float unitReturnRate = 0.5f;
-	public float unitReturnIncreaseCost = 1000.0f;
+	public Value unitReturnIncreaseCost = 1000.0f;
 
 	//in iterations of 100 seconds
 	public float maxPeriodInactive = 72.0f;
-	public float maxInactiveIncreaseCost = 2000.0f;
+	public Value maxInactiveIncreaseCost = 2000.0f;
 
 	[SerializeField]
 	private Text unitsText;
@@ -79,7 +79,8 @@ public class GameManager : Singleton<GameManager>
 
 		unitsText.text = units.GetStringVal();
 
-		spawnRateIncreaseCost = Mathf.Pow(spawnRateIncreaseCost, 2) * 2;
+		//spawnRateIncreaseCost = Mathf.Pow(spawnRateIncreaseCost, 2) * 2;
+		spawnRateIncreaseCost = Value.Pow(spawnRateIncreaseCost, 2) * 2;
 		resourceSpawnRate *= (1.0f + currentSpawnRateIncrease);
 
 		//has diminishing returns to avoid insane numbers of resources
@@ -96,7 +97,8 @@ public class GameManager : Singleton<GameManager>
 
 		unitsText.text = units.GetStringVal();
 
-		resourceValueIncreaseCost = Mathf.Pow(resourceValueIncreaseCost, 2) * 4;
+		//resourceValueIncreaseCost = Mathf.Pow(resourceValueIncreaseCost, 2) * 4;
+		resourceValueIncreaseCost = Value.Pow(resourceValueIncreaseCost, 2) * 4;
 
 		resourceValueMultiplier *= 2.0f;
 		return true;

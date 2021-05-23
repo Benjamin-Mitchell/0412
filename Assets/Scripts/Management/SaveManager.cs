@@ -29,12 +29,19 @@ public class SaveManager
 		//Game Manager Variables
 		//Spawn Rate
 		PlayerPrefs.SetFloat("SpawnRate", gameManager.resourceSpawnRate);
+		SaveCustomValue("SpawnRateCost", gameManager.spawnRateIncreaseCost);
 
 		//Value Multiplier
 		PlayerPrefs.SetFloat("ValueMultiplier", gameManager.resourceValueMultiplier);
+		SaveCustomValue("ValueMultiplierCost", gameManager.resourceValueIncreaseCost);
 
 		//Unit Return Rate
 		PlayerPrefs.SetFloat("UnitReturnRate", gameManager.unitReturnRate);
+		SaveCustomValue("UnitReturnRateCost", gameManager.unitReturnIncreaseCost);
+
+		//Max Period Inactive
+		PlayerPrefs.SetFloat("MaxPeriodInactive", gameManager.maxPeriodInactive);
+		SaveCustomValue("MaxPeriodInactiveCost", gameManager.maxInactiveIncreaseCost);
 
 		//Number of bases saved
 		PlayerPrefs.SetInt("NumberOfBases", allBases.Count);
@@ -99,20 +106,23 @@ public class SaveManager
 		//how long since last close
 		difference = System.DateTime.Now.Subtract(oldDate);
 
+		Value v;
 		//Game Manager Variables
 		//Spawn Rate
-		gameManager.resourceSpawnRate =  PlayerPrefs.GetFloat("SpawnRate");
+		gameManager.resourceSpawnRate =  PlayerPrefs.HasKey("SpawnRate") ? PlayerPrefs.GetFloat("SpawnRate") : gameManager.resourceSpawnRate;
+		gameManager.spawnRateIncreaseCost =  LoadCustomValue("SpawnRateCost", out v) ? v : gameManager.spawnRateIncreaseCost;
 
 		//Value Multiplier
-		gameManager.resourceValueMultiplier = PlayerPrefs.GetFloat("ValueMultiplier");
+		gameManager.resourceValueMultiplier = PlayerPrefs.HasKey("ValueMultiplier") ? PlayerPrefs.GetFloat("ValueMultiplier") : gameManager.resourceValueMultiplier; 
+		gameManager.resourceValueIncreaseCost = LoadCustomValue("ValueMultiplierCost", out v) ? v : gameManager.resourceValueIncreaseCost;
 
 		//Unit Return Rate
-		gameManager.unitReturnRate = PlayerPrefs.GetFloat("UnitReturnRate");
+		gameManager.unitReturnRate = PlayerPrefs.HasKey("UnitReturnRate") ? PlayerPrefs.GetFloat("UnitReturnRate") : gameManager.unitReturnRate;
+		gameManager.unitReturnIncreaseCost = LoadCustomValue("UnitReturnRateCost", out v) ? v : gameManager.unitReturnIncreaseCost;
 
-		gameManager.resourceSpawnRate = 1.0f;
-		gameManager.resourceValueMultiplier = 1.0f;
-		gameManager.unitReturnRate = 0.5f;
-
+		//Max Period Inactive
+		gameManager.maxPeriodInactive = PlayerPrefs.HasKey("MaxPeriodInactive") ? PlayerPrefs.GetFloat("MaxPeriodInactive") : gameManager.maxPeriodInactive;
+		gameManager.maxInactiveIncreaseCost = LoadCustomValue("MaxPeriodInactiveCost", out v) ? v : gameManager.maxInactiveIncreaseCost;
 
 
 		for (int i = 0; i < numBases; i++)
@@ -151,6 +161,23 @@ public class SaveManager
 		}
 
 		Debug.Log("Loading Successful!");
+		return true;
+	}
+
+	private void SaveCustomValue(String name, Value val)
+	{
+		PlayerPrefs.SetFloat(name + "RawValKey", val.GetRawVal());
+		PlayerPrefs.SetInt(name + "DenotationKey", val.GetRawDenotation());
+	}
+
+	private bool LoadCustomValue(String name, out Value val)
+	{
+		val = 0;
+		if (!PlayerPrefs.HasKey(name + "RawValKey"))
+			return false;
+		float rawVal = PlayerPrefs.GetFloat(name + "RawValKey");
+		int denotation = PlayerPrefs.GetInt(name + "DenotationKey");
+		val = new Value(rawVal, (Value.Denotation)denotation);
 		return true;
 	}
 }

@@ -28,6 +28,7 @@ public class GameManager : Singleton<GameManager>
 
 	//in iterations of 100 seconds
 	public float maxPeriodInactive = 72.0f;
+	public float maxInactiveIncreaseCost = 2000.0f;
 
 	[SerializeField]
 	private Text unitsText;
@@ -114,6 +115,22 @@ public class GameManager : Singleton<GameManager>
 
 		//this can go over 1.0f, giving more units than resources earned.
 		unitReturnRate += 0.1f;
+		return true;
+	}
+
+	public bool IncrementMaxInactive()
+	{
+		if (units > maxInactiveIncreaseCost)
+			units -= maxInactiveIncreaseCost;
+		else
+			return false;
+
+		unitsText.text = units.GetStringVal();
+
+		maxInactiveIncreaseCost *= 100.0f;
+
+		//Inactive time should increase by 30 mins each upgrade. (18 x 100 seconds)
+		maxPeriodInactive += 18;
 		return true;
 	}
 

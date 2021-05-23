@@ -63,7 +63,12 @@ public class UIManager : MonoBehaviour
 	GameObject dollarUI;
 
 	[SerializeField]
-	Text spawnRateUpgradeText, resourceValueUpgradeText, unitReturnRateUpgradeText;
+	Text spawnRateUpgradeText, resourceValueUpgradeText, unitReturnRateUpgradeText, MaxInactiveUpgradeText;
+
+	[SerializeField]
+	GameObject []BuyUIPages;
+
+	private int buyUICurrentPage = 0;
 
 	public delegate void ConfirmDelegate();
 	public ConfirmDelegate confirm;
@@ -90,6 +95,7 @@ public class UIManager : MonoBehaviour
 		spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.resourceSpawnRate + "\nUpgrade (" + gameManager.spawnRateIncreaseCost + " U)";
 		resourceValueUpgradeText.text = "Resource Value Multiplier: " + gameManager.resourceValueMultiplier + "\nUpgrade (" + gameManager.resourceValueIncreaseCost + " U)";
 		unitReturnRateUpgradeText.text = "Unit Return Rate: " + gameManager.unitReturnRate + "\nUpgrade (" + gameManager.unitReturnIncreaseCost + " U)";
+		MaxInactiveUpgradeText.text = "Max Period Inactive: " + (gameManager.maxPeriodInactive * 100 / 60) + " minutes\nUpgrade (" + gameManager.maxInactiveIncreaseCost + " U)";
 
 	}
 
@@ -314,9 +320,22 @@ public class UIManager : MonoBehaviour
 
 	public void DisableBuyUI()
 	{
-		
 		buyUI.SetActive(false);
 		dollarUI.SetActive(true);
+	}
+
+	public void IncrementBuyPageNumber()
+	{
+		BuyUIPages[buyUICurrentPage].SetActive(false);
+		buyUICurrentPage++;
+		BuyUIPages[buyUICurrentPage].SetActive(true);
+	}
+
+	public void DecrementBuyPageNumber()
+	{
+		BuyUIPages[buyUICurrentPage].SetActive(false);
+		buyUICurrentPage--;
+		BuyUIPages[buyUICurrentPage].SetActive(true);
 	}
 
 	public void SpawnRateIncrement()
@@ -340,6 +359,15 @@ public class UIManager : MonoBehaviour
 		if (gameManager.IncrementUnitReturn())
 		{
 			unitReturnRateUpgradeText.text = "Unit Return Rate: " + gameManager.unitReturnRate + "\nUpgrade (" + gameManager.unitReturnIncreaseCost + " U)";
+		}
+	}
+
+	public void MaxPeriodInactiveIncrement()
+	{
+		if(gameManager.IncrementMaxInactive())
+		{
+			//convert X number of 100Seconds to minutes.
+			MaxInactiveUpgradeText.text = "Max Period Inactive: " + (gameManager.maxPeriodInactive * 100 / 60) + " minutes\nUpgrade (" + gameManager.maxInactiveIncreaseCost + " U)";
 		}
 	}
 

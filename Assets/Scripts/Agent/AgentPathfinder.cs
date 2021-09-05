@@ -73,11 +73,14 @@ public class AgentPathfinder : MonoBehaviour
 					path.RemoveAt(0);
 
 					//if a raycast in the direction of the next path node hits nothing, skip this path node
-					while (!Physics.Raycast(transform.position, path[1] - transform.position, 1000.0f))
+					if (path.Count > 1)
 					{
-						path.RemoveAt(0);
-						if (path.Count <= 1)
-							break;
+						while (!Physics.Raycast(transform.position, path[1] - transform.position, 1000.0f))
+						{
+							path.RemoveAt(0);
+							if (path.Count <= 1)
+								break;
+						}
 					}
 				}
 			}

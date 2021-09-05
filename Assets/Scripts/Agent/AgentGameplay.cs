@@ -77,11 +77,12 @@ public class AgentGameplay : MonoBehaviour
                 break;
             case State.ChasingResource:
 
-                //TODO: check if resource is still present, or pick one that is guaranteed to still be in range.
-                
+				if (resourceTarget == null)
+					resourceTarget = resourceSpawner.RequestResource();
 
-                // TODO: need to modify distance to resource beforce collecting it
-                if (Vector3.Distance(transform.position, resourceTarget.transform.position) < 2.5f)
+
+				// TODO: need to modify distance to resource beforce collecting it
+				if (Vector3.Distance(transform.position, resourceTarget.transform.position) < 2.5f)
                 {
                     // Get Resource
                     carryingValue = resourceTarget.value;

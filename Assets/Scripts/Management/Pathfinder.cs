@@ -85,7 +85,7 @@ public class Pathfinder : MonoBehaviour
 
     //pre-initialize lists, to remove GC overhead.
 	//TODO: sync me across threads!!
-    List<Node> open;
+    List<Node> openNodes;
     List<Node> returnNodes;
     List<Node> neighbours;
     List<Vector3> vector3Path;
@@ -153,10 +153,13 @@ public class Pathfinder : MonoBehaviour
     //This function is broken up to allow for easier profiling with Unity tools.
     void FindPath(Node from, Node to, Vector3 finalTo, AgentPathfinder agent)
     {
+        int lenOne = openNodes.Count;
         Node current = FindPathInit(from);
 
-        while (open.Count > 0)
+        int lenTwo = openNodes.Count;
+        while (openNodes.Count > 0)
         {
+            int lenThree = openNodes.Count;
             current.f = current.g = current.h = 0;
 			if (CheckReached(current, to))
 			{
@@ -164,10 +167,16 @@ public class Pathfinder : MonoBehaviour
 				return;
 			}
 
-            current = open[0];
-            open.Remove(current);
+            if (openNodes[0] == null)
+                Debug.Log("How is openNodes[0] null?!");
 
-			if (current == null)
+            int lenFour = openNodes.Count;
+            current = openNodes[0];
+            openNodes.RemoveAt(0);
+
+            int lenFive = openNodes.Count;
+
+            if (current == null)
 				Debug.Log("How is current null?!");
 
 
@@ -216,13 +225,12 @@ public class Pathfinder : MonoBehaviour
 
     Node FindPathInit(Node from)
     {
-        open.Clear();
+        openNodes.Clear();
         Node current;
 
         current = from;
-        open.Add(current);
+        openNodes.Add(current);
 
-        //performant
         foreach (Node node in grid)
         {
             node.clear();
@@ -276,7 +284,7 @@ public class Pathfinder : MonoBehaviour
             if (!inOpen)
             {
                 neighbour.open = true;
-				lock (open) { open.Add(neighbour); };
+				lock (openNodes) { openNodes.Add(neighbour); };
             }
 
             neighbour.f = f;
@@ -337,7 +345,7 @@ public class Pathfinder : MonoBehaviour
 
         // Assumption made that map will never be taller (Y) than it is wide/long (X/Z).
         int maxGridTraversal = mapX + mapZ;
-        open = new List<Node>(maxGridTraversal);
+        openNodes = new List<Node>(maxGridTraversal);
         returnNodes = new List<Node>(maxGridTraversal);
         vector3Path = new List<Vector3>(maxGridTraversal);
 

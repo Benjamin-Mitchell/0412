@@ -226,8 +226,17 @@ public class AgentPathfinder : MonoBehaviour
 
 	private void CustomMoveTowards(Vector3 target)
 	{
-		//transform.position = Vector3.MoveTowards(transform.position, path[0], moveSpeed * Time.deltaTime);
-		transform.position = Vector3.MoveTowards(transform.position, transform.position + transform.forward, moveSpeed * Time.deltaTime);
+		float movePercentage = 1.0f;
+
+		float ang = Vector3.Angle(transform.forward, target - transform.position);
+		if (ang > 90.0f)//scale down movespeed if the angle is above 90 degrees.
+		{
+			movePercentage = 1.0f - ((ang - 90.0f) / 90.0f);
+		}
+		
+		float actualSpeed = moveSpeed * movePercentage;
+		transform.position = Vector3.MoveTowards(transform.position, transform.position + transform.forward, actualSpeed * Time.deltaTime); ;
+
 		stats.distanceTravelled += Vector3.Distance(transform.position, oldPosition);
 		oldPosition = transform.position;
 

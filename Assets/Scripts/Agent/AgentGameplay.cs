@@ -78,7 +78,7 @@ public class AgentGameplay : MonoBehaviour
             case State.ChasingResource:
 
 				if (resourceTarget == null)
-					resourceTarget = resourceSpawner.RequestResource();
+					resourceTarget = resourceSpawner.RequestResource(transform.position);
 
 
 				// TODO: need to modify distance to resource beforce collecting it
@@ -133,7 +133,7 @@ public class AgentGameplay : MonoBehaviour
 				}
 
 				if(resourceTarget == null)
-					resourceTarget = resourceSpawner.RequestResource();
+					resourceTarget = resourceSpawner.RequestResource(transform.position);
 
 				break;
 			case State.Idle:
@@ -158,7 +158,7 @@ public class AgentGameplay : MonoBehaviour
 				}
 				else
 				{
-					resourceTarget = resourceSpawner.RequestResource();
+					resourceTarget = resourceSpawner.RequestResource(transform.position);
 				}
 
 				break;
@@ -193,7 +193,7 @@ public class AgentGameplay : MonoBehaviour
 	private void BeginUnloading()
 	{
 		//check here too
-		resourceTarget = resourceSpawner.RequestResource();
+		resourceTarget = resourceSpawner.RequestResource(transform.position);
 		agentPathfinding.SetOrbitTarget(associatedBase.gameObject);
 
 		if (resourceTarget != null)

@@ -70,6 +70,7 @@ public class ResourceSpawner : MonoBehaviour
 		availableResources.Add(r);
     }
 
+	//return first available resource.
 	public Resource RequestResource()
 	{
 		Resource r;
@@ -77,10 +78,36 @@ public class ResourceSpawner : MonoBehaviour
 		if (availableResources.Count == 0)
 			return null;
 		
-		//TODO: make this return nearest resource instead of "first"? or some other smart allocation...
 		r = availableResources[0];
 		availableResources.RemoveAt(0);
 
+		return r;
+	}
+
+	//Return resource closest to the requester.
+	public Resource RequestResource(Vector3 pos)
+	{
+
+		Resource r;
+
+		if (availableResources.Count == 0)
+			return null;
+
+		float minDistance = Vector3.Distance(availableResources[0].transform.position, pos);
+		int minDistIndex = 0;
+
+		for (int i = 1; i < availableResources.Count; i++)
+		{
+			float d = Vector3.Distance(availableResources[i].transform.position, pos);
+			if (d < minDistance)
+			{
+				minDistance = d;
+				minDistIndex = i;
+			}
+		}
+
+		r = availableResources[minDistIndex];
+		availableResources.RemoveAt(minDistIndex);
 		return r;
 	}
 }

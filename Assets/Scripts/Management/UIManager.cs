@@ -12,6 +12,12 @@ public class UIManager : MonoBehaviour
 	GameObject agentUI;
 
 	[SerializeField]
+	GameObject agentRenameUI;
+
+	[SerializeField]
+	InputField agentRenameInputField; 
+
+	[SerializeField]
 	Image resourceImage;
 
 	[SerializeField]
@@ -204,8 +210,32 @@ public class UIManager : MonoBehaviour
 		distanceTravelledText.text = "Distance Travelled: " + agentRef.distanceTravelled.GetStringVal();
 	}
 
-    //For now you can only select bases
-    public void EnableUI(Base b)
+	public void EnableRenameAgentUI()
+	{
+		agentUI.SetActive(false);
+		agentRenameUI.SetActive(true);
+	}
+
+	public void DisableRenameAgentUI(bool renamed)
+	{
+		agentUI.SetActive(true);
+		agentRenameUI.SetActive(false);
+
+		if (renamed)
+		{
+			if (agentRenameInputField.text.Length < 24)
+			{
+				agentRef.agentName = agentRenameInputField.text;
+				agentNameText.text = agentRef.agentName;
+			}
+			else
+			{
+
+			}
+		}
+	}
+
+	public void EnableUI(Base b)
 	{
 		DefaultState();
 		active = UIACTIVE.Base;

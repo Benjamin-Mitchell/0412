@@ -46,8 +46,17 @@ public class ResourceSpawner : MonoBehaviour
             Spawn();
         }
 
+		for(int i = availableResources.Count - 1; i >= 0; i--)
+		{
+			if (availableResources[i].transform.position.x < 0.0f || availableResources[i].transform.position.y < 0.0f || availableResources[i].transform.position.z < 0.0f)
+			{
+				//need to remove it from the list, then destroy it
+				GameObject temp = availableResources[i].gameObject;
+				availableResources.RemoveAt(i);
+				Destroy(temp);
+			}
+		}
     }
-
 
     void Spawn()
     {

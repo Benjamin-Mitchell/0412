@@ -30,9 +30,6 @@ public class Resource : MonoBehaviour
     {
 		if(canMove)
 			transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
-
-        if (transform.position.z < .0f)
-            Destroy(gameObject);
     }
 
 	public void consume()

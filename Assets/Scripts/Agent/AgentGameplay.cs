@@ -13,7 +13,7 @@ public class AgentGameplay : MonoBehaviour
 
 	private float timeToLoad = 5.0f;
 
-	AgentStats stats;
+	public AgentStats stats;
 
     public enum State
     {

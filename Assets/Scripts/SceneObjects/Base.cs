@@ -35,7 +35,7 @@ public class Base : MonoBehaviour
 
     public GameObject buildSphere;
 
-	private List<AgentGameplay> agents = new List<AgentGameplay>();
+	public List<AgentGameplay> agents = new List<AgentGameplay>();
 
 	[System.NonSerialized]
 	public int numAgents = 0;
@@ -160,6 +160,7 @@ public class Base : MonoBehaviour
 			Vector3 newAgentPos = new Vector3(x, transform.position.y, z);
 			AddAgent(agentPrefab, newAgentPos, out AgentGameplay a);
 			a.setStage(stage);
+			a.stats.SetStats(bData.agentDatas[i]);
 
 			float moveSpeed = a.gameObject.GetComponent<AgentPathfinder>().moveSpeed;
 

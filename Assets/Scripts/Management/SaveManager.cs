@@ -5,6 +5,13 @@ using UnityEngine;
 
 public class SaveManager
 {
+	public struct AgentData
+	{
+		public string agentName;
+		public Value resourceCollected;
+		public Value distanceTravelled;
+	}
+
 	//bases will need an ID to identify which base they are. This can be in build order.
 	public struct BaseData
 	{
@@ -15,6 +22,7 @@ public class SaveManager
 		public float boostTime;
 		public Value heldResource;
 		public int numAgents;
+		public List<AgentData> agentDatas;
 	}
 
 	//something for total game status
@@ -76,6 +84,26 @@ public class SaveManager
 
 			//number of agents
 			PlayerPrefs.SetInt(baseString + "NumAgents", b.numAgents);
+
+			//agent stats
+			for(int j = 0; j < b.numAgents; j++)
+			{
+				string agentString = "Agent_" + j + "_";
+				
+				//agent name
+				PlayerPrefs.SetString(baseString + agentString + "AgentName", b.agents[j].stats.agentName);
+
+				//agent resource collected
+				Value vAgent = b.agents[j].stats.resourceCollected;
+				PlayerPrefs.SetFloat(baseString + agentString + "ResourceCollectedRawVal", vAgent.GetRawVal());
+				PlayerPrefs.SetInt(baseString + agentString + "ResourceCollectedDenotation", vAgent.GetRawDenotation());
+
+				//agent distance travelled
+				vAgent = b.agents[j].stats.distanceTravelled;
+				PlayerPrefs.SetFloat(baseString + agentString + "DistanceTravelledRawVal", vAgent.GetRawVal());
+				PlayerPrefs.SetInt(baseString + agentString + "DistanceTravelledDenotation", vAgent.GetRawDenotation());
+
+			}
 		}
 		Debug.Log("Saving!");
 	}
@@ -157,6 +185,26 @@ public class SaveManager
 			b.numAgents = PlayerPrefs.GetInt(baseString + "NumAgents");
 			totalAgents += b.numAgents;
 
+			b.agentDatas = new List<AgentData>();
+
+			for(int j = 0; j < b.numAgents; j++)
+			{
+				string agentString = "Agent_" + j + "_";
+				AgentData a;
+
+				a.agentName = PlayerPrefs.GetString(baseString + agentString + "AgentName");
+
+				float aVal = PlayerPrefs.GetFloat(baseString + agentString + "ResourceCollectedRawVal");
+				int aDenotation = PlayerPrefs.GetInt(baseString + agentString + "ResourceCollectedDenotation");
+				a.resourceCollected = new Value(aVal, (Value.Denotation)aDenotation);
+
+				aVal = PlayerPrefs.GetFloat(baseString + agentString + "DistanceTravelledRawVal");
+				aDenotation = PlayerPrefs.GetInt(baseString + agentString + "DistanceTravelledDenotation");
+				a.distanceTravelled = new Value(aVal, (Value.Denotation)aDenotation);
+
+				b.agentDatas.Add(a);
+				///TEST
+			}
 			bases.Add(b);
 		}
 

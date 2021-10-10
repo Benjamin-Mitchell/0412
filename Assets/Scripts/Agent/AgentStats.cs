@@ -9,7 +9,7 @@ public class AgentStats : MonoBehaviour
 	public Value distanceTravelled; //time alive?
 
     // Start is called before the first frame update
-    void Start()
+    void Awake()
     {
 		//Do load instead.
 		agentName = possibleNames[Random.Range(0, possibleNames.Length)];
@@ -22,6 +22,14 @@ public class AgentStats : MonoBehaviour
     {
         
     }
+
+	public void SetStats(SaveManager.AgentData data)
+	{
+		agentName = data.agentName;
+		resourceCollected = data.resourceCollected;
+		distanceTravelled = data.distanceTravelled;
+
+	}
 
 	private string[] possibleNames =
 	{ "Alexa", "Phil", "Colonel", "Daisy", "Forgone Conclusion", "Pain is infinite", "Dodger",

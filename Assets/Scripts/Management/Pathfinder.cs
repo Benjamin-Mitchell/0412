@@ -114,7 +114,7 @@ public class Pathfinder : MonoBehaviour
 			return;
         }
 
-        Node toNode = ReturnNodeFromVector3(to);
+        Node toNode = ReturnNodeFromVector3ToNode(from, to);
 
 		Thread t = new Thread(() => FindPath(fromNode, toNode, to, agent));
 		t.Start();
@@ -153,28 +153,26 @@ public class Pathfinder : MonoBehaviour
     //This function is broken up to allow for easier profiling with Unity tools.
     void FindPath(Node from, Node to, Vector3 finalTo, AgentPathfinder agent)
     {
-        int lenOne = openNodes.Count;
         Node current = FindPathInit(from);
 
-        int lenTwo = openNodes.Count;
+        if (CheckReached(current, to))
+        {
+            PathFound(returnNodes, agent, finalTo);
+            return;
+        }
+
         while (openNodes.Count > 0)
         {
-            int lenThree = openNodes.Count;
             current.f = current.g = current.h = 0;
-			if (CheckReached(current, to))
-			{
-				PathFound(returnNodes, agent, finalTo);
-				return;
-			}
-
-            if (openNodes[0] == null)
-                Debug.Log("How is openNodes[0] null?!");
-
-            int lenFour = openNodes.Count;
+			
             current = openNodes[0];
             openNodes.RemoveAt(0);
 
-            int lenFive = openNodes.Count;
+            if (CheckReached(current, to))
+            {
+                PathFound(returnNodes, agent, finalTo);
+                return;
+            }
 
             if (current == null)
 				Debug.Log("How is current null?!");
@@ -182,6 +180,8 @@ public class Pathfinder : MonoBehaviour
 
             current.open = false;
             current.visited = true;
+
+            
 
             // check neighbours
             for (int x = -1; x < 2; x++)
@@ -200,6 +200,8 @@ public class Pathfinder : MonoBehaviour
 
 						Node neighbour = null;
                         // check its a valid neighbour
+
+
                         neighbour = CheckNeighbourValidity(x, y, z, current);
 
                         if (neighbour == null)
@@ -277,20 +279,32 @@ public class Pathfinder : MonoBehaviour
         return grid[newNodeX, newNodeY, newNodeZ];
     }
 
-    void AddToOpenSet(bool inOpen, Node neighbour, float f, float g, float h, Node current)
+    void AddToOpenSet(bool inOpen, Node toAdd, float f, float g, float h, Node current)
     {
-        if (!inOpen || (inOpen && (neighbour.f > f)))
+        if (!inOpen || (inOpen && (toAdd.f > f)))
         {
+            toAdd.f = f;
+            toAdd.g = g;
+            toAdd.h = h;
+            toAdd.parent = current;
+
             if (!inOpen)
             {
-                neighbour.open = true;
-				lock (openNodes) { openNodes.Add(neighbour); };
+                toAdd.open = true;
+
+				lock (openNodes) {
+                    for (int i = 0; i < openNodes.Count; i++)
+                    {
+                        if(toAdd.f < openNodes[i].f)
+						{
+                            openNodes.Insert(i, toAdd);
+                            return;
+						}
+                    }
+                    openNodes.Add(toAdd); };
             }
 
-            neighbour.f = f;
-            neighbour.g = g;
-            neighbour.h = h;
-            neighbour.parent = current;
+            
         }
     }
 
@@ -320,7 +334,7 @@ public class Pathfinder : MonoBehaviour
 
                     // don't add off-screen nodes
                     if (newNodeX < 0 || newNodeY < 0 || newNodeZ < 0
-                            || newNodeX >= GameManager.Instance.mapX || newNodeY >= GameManager.Instance.mapY || newNodeZ >= GameManager.Instance.mapZ)
+                            || newNodeX >= mapX || newNodeY >= mapY || newNodeZ >= mapZ)
                         continue;
 
                     // don't add occupied nodes
@@ -399,11 +413,11 @@ public class Pathfinder : MonoBehaviour
 
 	void InitiateGrid()
     {
-        for(int x = 0; x < GameManager.Instance.mapX; x++)
+        for(int x = 0; x < mapX; x++)
         {
-            for (int y = 0; y < GameManager.Instance.mapY; y++)
+            for (int y = 0; y < mapY; y++)
             {
-                for (int z = 0; z < GameManager.Instance.mapZ; z++)
+                for (int z = 0; z < mapZ; z++)
                 {
 
                     grid[x, y, z] = new Node();
@@ -515,24 +529,78 @@ public class Pathfinder : MonoBehaviour
 		if (nodeZ < 0)
 			nodeZ = 0;
 
-		return grid[nodeX, nodeY, nodeZ];
+        Node ret = grid[nodeX, nodeY, nodeZ];
+
+        if (ret == null)
+            Debug.Log("ReturnNodeFromVector3 shit the bed. Node: (" + nodeX + ", " + nodeY + ", " + nodeZ + ")");
+
+        return ret;
     }
 
-	/////////////////////////////////////////////
-	///JUST FOR TESTING
-	/////////////////////////////////////////////
-	void drawGrid()
+    //This function exists to give a better approximation of what node should be used as the last node.
+    //The final "to" position will be a 3d Vector position surrounded by a group of nodes.
+    //We want to pick the node closest to the starting position (the one most in the same direction as where the agent will be coming from)
+    Node ReturnNodeFromVector3ToNode(Vector3 from, Vector3 to)
+    {
+        Vector3 nodePos = to - new Vector3(to.x % nodeSize, to.y % nodeSize, to.z % nodeSize);
+
+        Vector3 direction = from - to;
+
+        // -1 for offset into 0 indexed array.
+        int nodeX = (int)(nodePos.x / nodeSize);
+        int nodeY = (int)(nodePos.y / nodeSize);
+        int nodeZ = (int)(nodePos.z / nodeSize);
+
+        if (direction.x < 0)
+            nodeX--;
+
+        if (direction.y < 0)
+            nodeY--;
+
+        if (direction.z < 0)
+            nodeZ--;
+
+        if (nodeX >= mapX)
+            nodeX = mapX - 1;
+
+        if (nodeY >= mapY)
+            nodeY = mapY - 1;
+
+        if (nodeZ >= mapZ)
+            nodeZ = mapZ - 1;
+
+        if (nodeX < 0)
+            nodeX = 0;
+
+        if (nodeY < 0)
+            nodeY = 0;
+
+        if (nodeZ < 0)
+            nodeZ = 0;
+
+        Node ret = grid[nodeX, nodeY, nodeZ];
+
+        if (ret == null)
+            Debug.Log("ReturnNodeFromVector3 shit the bed. Node: (" + nodeX + ", " + nodeY + ", " + nodeZ + ")");
+
+        return ret;
+    }
+
+    /////////////////////////////////////////////
+    ///JUST FOR TESTING
+    /////////////////////////////////////////////
+    void drawGrid()
     {
         MeshFilter filter = gameObject.GetComponent<MeshFilter>();
         var mesh = new Mesh();
         var verticies = new List<Vector3>();
 
         var indicies = new List<int>();
-        for (int x = 0; x < GameManager.Instance.mapX; x++)
+        for (int x = 0; x < mapX; x++)
         {
-            for (int y = 0; y < GameManager.Instance.mapY; y++)
+            for (int y = 0; y < mapY; y++)
             {
-                for (int z = 0; z < GameManager.Instance.mapZ; z++)
+                for (int z = 0; z < mapZ; z++)
                 {                    
                     if (grid[x, y, z].occupied)
                     {

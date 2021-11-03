@@ -90,7 +90,7 @@ public class BuildManager : MonoBehaviour
 		}
 		else
 		{
-			Debug.Log("Not enough resources availble for maximum returns. Upgrade Resource spawn rate!");
+			Debug.Log("Not enough resources available for maximum returns. Upgrade Resource spawn rate!");
 		}
 
 		//Load setup 2 needs information gathered from all bases/agents to calculate gains.

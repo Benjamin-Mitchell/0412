@@ -5,7 +5,7 @@ using UnityEngine;
 //TODO: change this name to AgentPathfinding
 public class AgentPathfinder : MonoBehaviour
 {
-    List<Vector3> path = new List<Vector3>();
+    List<Vector3> path;
     Pathfinder pathFinder;
 
     public float moveSpeed = 1.0f;
@@ -38,10 +38,15 @@ public class AgentPathfinder : MonoBehaviour
 
 	private LayerMask targetLayerMask;
 	float maxRayDistance;
+
+	private GameObject debugTarget;
+
 	// Start is called before the first frame update
 	void Awake()
     {
-        pathFinder = GetComponent<Pathfinder>();
+		debugTarget = GameObject.Find("DebugTarget");
+		path = new List<Vector3>();
+		pathFinder = GetComponent<Pathfinder>();
 		actionTime = pathUpdateStep;
 		stats = GetComponent<AgentStats>();
     }
@@ -120,6 +125,7 @@ public class AgentPathfinder : MonoBehaviour
 			return;
 		}
 
+
 		// raycast failed, do 3d A*.
 		NullifyPath();
 
@@ -140,27 +146,25 @@ public class AgentPathfinder : MonoBehaviour
     public void SetPath(GameObject target)
     {
 		Debug.DrawRay(transform.position, target.transform.position - transform.position);
-		//do a ray-cast first, this is more optimal if possible. returns true if hits a collider
 		if (Physics.Raycast(transform.position, target.transform.position - transform.position, out RaycastHit hit, maxRayDistance , targetLayerMask))
         {
-			// target is in direct vision
+			//target is in direct vision
 			if (hit.collider.gameObject == target)
-            {
-                actionTime = pathUpdateStep;
+			{
+				actionTime = pathUpdateStep;
 				SetSingleNodePath(target.transform.position);
 				hasPath = true;
-                return;
-            }
+				return;
+			}
 
 			//ELSE, something else was in the way.
-			
+
 			//only update the path ever pathUpdateStep seconds.
 			if (actionTime < pathUpdateStep)
 			{
 				return;
 			}
 
-			
 			// raycast failed, do 3d A*.
 			NullifyPath();
 			
@@ -226,6 +230,9 @@ public class AgentPathfinder : MonoBehaviour
 
 	private void CustomMoveTowards(Vector3 target)
 	{
+		if(debugTarget)
+			debugTarget.transform.position = target;
+
 		float movePercentage = 1.0f;
 
 		float ang = Vector3.Angle(transform.forward, target - transform.position);

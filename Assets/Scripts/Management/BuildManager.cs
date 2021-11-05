@@ -148,14 +148,17 @@ public class BuildManager : MonoBehaviour
 
     void DefaultPlayLoop()
     {
+        Debug.Log("This actually happens");
 		if (building)
         {
+            Debug.Log("This actually happens 2");
             bool hit = false;
-            beingBuilt.transform.Rotate(new Vector3(0.2f, 0.2f, 0.0f));
+            beingBuilt.transform.Rotate(new Vector3(0.1f, 0.1f, 0.0f));
 
 #if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
             // if desktop, show where it will be placed.
             Vector3 point = GetBuildSpherePos(true, ref hit);
+            //Debug.Log(point);
 
 #elif (UNITY_ANDROID || UNITY_IOS)
             if ((Input.touchCount > 0) && (Input.GetTouch(0).phase == TouchPhase.Began))
@@ -225,6 +228,7 @@ public class BuildManager : MonoBehaviour
         int layerMask = ~ LayerMask.GetMask("Base");
         if (Physics.Raycast(ray, out hit, 150.0f, layerMask))
         {
+            Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.name.Contains("BuildSphere"))
             {
                 result = hit.point;

@@ -35,6 +35,8 @@ public class SaveManager
 		PlayerPrefs.SetString("TimeString", System.DateTime.Now.ToBinary().ToString());
 
 		//Game Manager Variables
+		PlayerPrefs.SetInt("FinishedIntroduction", gameManager.finishedIntroduction ? 1 : 0);
+
 		//Spawn Rate
 		PlayerPrefs.SetFloat("SpawnRate", gameManager.resourceSpawnRate);
 		SaveCustomValue("SpawnRateCost", gameManager.spawnRateIncreaseCost);
@@ -105,13 +107,13 @@ public class SaveManager
 
 			}
 		}
-		Debug.Log("Saving!");
+		//Debug.Log("Saving!");
 	}
 
 	//return true if loads successfully
 	public bool Load(GameManager gameManager, out List<BaseData> bases, out TimeSpan difference, out int totalAgents)
 	{
-		Debug.Log("Loading!");
+		//Debug.Log("Loading!");
 
 		bases = new List<BaseData>();
 		difference = new TimeSpan();
@@ -136,6 +138,8 @@ public class SaveManager
 
 		Value v;
 		//Game Manager Variables
+		gameManager.finishedIntroduction = PlayerPrefs.GetInt("FinishedIntroduction") > 0 ? true : false;
+
 		//Spawn Rate
 		gameManager.resourceSpawnRate =  PlayerPrefs.HasKey("SpawnRate") ? PlayerPrefs.GetFloat("SpawnRate") : gameManager.resourceSpawnRate;
 		gameManager.spawnRateIncreaseCost =  LoadCustomValue("SpawnRateCost", out v) ? v : gameManager.spawnRateIncreaseCost;
@@ -208,7 +212,7 @@ public class SaveManager
 			bases.Add(b);
 		}
 
-		Debug.Log("Loading Successful!");
+		//Debug.Log("Loading Successful!");
 		return true;
 	}
 

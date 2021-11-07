@@ -50,7 +50,6 @@ public class BuildManager : MonoBehaviour
 
 	void BuildBase(GameObject asset, Vector3 pos, out Base b)
 	{
-		Debug.Log("Instantiating a base!");
 		beingBuilt = Instantiate(asset, pos, Quaternion.identity);
 		b = beingBuilt.GetComponent<Base>();
 		//allBases.Add(b);
@@ -148,10 +147,8 @@ public class BuildManager : MonoBehaviour
 
     void DefaultPlayLoop()
     {
-        Debug.Log("This actually happens");
 		if (building)
         {
-            Debug.Log("This actually happens 2");
             bool hit = false;
             beingBuilt.transform.Rotate(new Vector3(0.1f, 0.1f, 0.0f));
 
@@ -259,22 +256,13 @@ public class BuildManager : MonoBehaviour
         beingBuiltBaseComp.baseStages[newStage].SetActive(true);
         beingBuiltBaseComp.enabled = false;
 #endif
-		if (isFreshBuild)
+		foreach(Base b in allBases)
 		{
-			foreach(Base b in allBases)
-			{
-				b.buildSphere.SetActive(true);
-				b.buildSphere.transform.localScale = new Vector3(15.0f, 15.0f, 15.0f);
-			}
-		}
-		else
-		{
-			// enable sphere to show range. give it appropriate scale based on build radius.
-			refBase.buildSphere.SetActive(true);
-
-			//need to organize individual sphere scales (factor in base type, base stage and isFreshBuild)
-			refBase.buildSphere.transform.localScale = new Vector3(15.0f, 15.0f, 15.0f);
-		}
+			b.buildSphere.SetActive(true);
+            //build sphere size is flat value (15.0f) + (new_stage * 3.0f);
+            float x = 15.0f + ((float)b.stage * 3.0f);
+            b.buildSphere.transform.localScale = new Vector3(x, x, x);
+        }
 
         referanceBase = refBase;
 
@@ -306,10 +294,7 @@ public class BuildManager : MonoBehaviour
 		
 		building = false;
 
-		if(isFreshBuild)
-			foreach(Base b in allBases) { b.buildSphere.SetActive(false); }
-		else
-			referanceBase.buildSphere.SetActive(false);
+		foreach(Base b in allBases) { b.buildSphere.SetActive(false); }
 
 		beingBuiltBaseComp.enabled = true;
 		allBases.Add(beingBuiltBaseComp);

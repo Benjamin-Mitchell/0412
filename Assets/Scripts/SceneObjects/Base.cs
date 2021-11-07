@@ -6,7 +6,14 @@ using UnityEngine.UI;
 
 public class Base : MonoBehaviour
 {
-    public GameObject[] baseStages = new GameObject[5];
+	private string[] possibleNames =
+	{ "The Cottage", "Ground Zero", "Beginnings", "Alpha One", "The Dojo", "King's Market", "The Zoo", "The Kennel",
+	"The Shard", "Castle", "The Den", "Queen's Chambers", "Flat 35", "The Royal Court", "Skylab", "Salyut", "ISS",
+	"TianGong", "Kosmos", "Mir", "Genesis", "OPS 0855", "DOS-2", "Gateway", "Springer", "Habitat", "Shuttle"};
+
+	public string baseName;
+
+	public GameObject[] baseStages = new GameObject[5];
 
     public float[] sphereScalingFactors = new float[5];
 
@@ -47,7 +54,9 @@ public class Base : MonoBehaviour
 
     private void Awake()
     {
-        GameObject spherePrefab = (GameObject)Resources.Load("BuildSphere", typeof(GameObject));
+		baseName = possibleNames[UnityEngine.Random.Range(0, possibleNames.Length)];
+
+		GameObject spherePrefab = (GameObject)Resources.Load("BuildSphere", typeof(GameObject));
         buildSphere = GameObject.Instantiate(spherePrefab, transform.position, Quaternion.identity);
         buildSphere.SetActive(false);
     }
@@ -73,13 +82,18 @@ public class Base : MonoBehaviour
     {
 		transform.Rotate(rotationFactor);
 
-
         //DEBUG ONLY
         if(Input.GetKeyDown(KeyCode.G))
         {
             heldResource += 100;
         }
-    }
+		
+		//DEBUG ONLY
+		if(Input.GetKeyDown(KeyCode.H))
+		{
+			heldResource += 100000000;
+		}
+	}
 
 	public void AddAgent(GameObject prefab, Vector3 position, out AgentGameplay a)
 	{
@@ -114,6 +128,7 @@ public class Base : MonoBehaviour
 	{
 		//extract information from saved BaseData
 		ID = bData.ID;
+		baseName = bData.baseName;
 		stage = bData.currentStage;
 		baseType = bData.baseType;
 		tapSeconds = bData.boostTime;

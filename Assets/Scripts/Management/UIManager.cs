@@ -9,6 +9,9 @@ public class UIManager : MonoBehaviour
 	GameObject baseUI;
 
 	[SerializeField]
+	Text baseNameText;
+
+	[SerializeField]
 	GameObject agentUI;
 
 	[SerializeField]
@@ -213,20 +216,32 @@ public class UIManager : MonoBehaviour
 	public void EnableRenameAgentUI()
 	{
 		agentUI.SetActive(false);
+		baseUI.SetActive(false);
 		agentRenameUI.SetActive(true);
 	}
 
 	public void DisableRenameAgentUI(bool renamed)
 	{
-		agentUI.SetActive(true);
+		if (active == UIACTIVE.Agent)
+			agentUI.SetActive(true);
+		else if (active == UIACTIVE.Base)
+			baseUI.SetActive(true);
 		agentRenameUI.SetActive(false);
 
 		if (renamed)
 		{
 			if (agentRenameInputField.text.Length < 24)
 			{
-				agentRef.agentName = agentRenameInputField.text;
-				agentNameText.text = agentRef.agentName;
+				if (active == UIACTIVE.Agent)
+				{
+					agentRef.agentName = agentRenameInputField.text;
+					agentNameText.text = agentRef.agentName;
+				}
+				else if(active == UIACTIVE.Base)
+				{
+					baseRef.baseName = agentRenameInputField.text;
+					baseNameText.text = baseRef.baseName;
+				}
 			}
 			else
 			{
@@ -240,6 +255,7 @@ public class UIManager : MonoBehaviour
 		DefaultState();
 		active = UIACTIVE.Base;
         baseRef = b;
+		baseNameText.text = baseRef.baseName;
         RecalculateBuildReq();
 		baseUI.SetActive(true);
         fullyUpgraded = baseRef.IsFullyUpgraded();

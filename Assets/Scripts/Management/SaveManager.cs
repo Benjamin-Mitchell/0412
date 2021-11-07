@@ -16,6 +16,7 @@ public class SaveManager
 	public struct BaseData
 	{
 		public int ID;
+		public string baseName;
 		public Vector3 position;
 		public int currentStage;
 		public string baseType;
@@ -64,6 +65,9 @@ public class SaveManager
 
 			//ID
 			PlayerPrefs.SetInt(baseString, b.ID);
+
+			//Name
+			PlayerPrefs.SetString(baseString + "Name", b.baseName);
 
 			//position
 			PlayerPrefs.SetFloat(baseString + "Position_X", b.transform.position.x);
@@ -165,6 +169,9 @@ public class SaveManager
 			
 			//ID
 			b.ID = PlayerPrefs.GetInt(baseString);
+
+			//Name
+			b.baseName = PlayerPrefs.GetString(baseString + "Name");
 
 			//position
 			b.position.x = PlayerPrefs.GetFloat(baseString + "Position_X");

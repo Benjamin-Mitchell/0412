@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class InputManager : MonoBehaviour
 {
@@ -81,19 +82,23 @@ public class InputManager : MonoBehaviour
 				{
 					if (Physics.Raycast(ray, out hit))
 					{
-						if (hit.collider.CompareTag("Base"))
-						{
-							MoveCamTo(hit.collider.gameObject.GetComponentInParent<Base>());
-							//MoveCamTo(hit.collider.gameObject.transform.parent.GetComponent<Base>());
-							return;
-						}
-						else if (hit.collider.CompareTag("Agent"))
-						{
-							//colliders are on the individual agent stage objects (for size correctness)
-							//These are children of the actual agent object.
-							MoveCamTo(hit.collider.gameObject.GetComponentInParent<AgentStats>());
-							return;
-						}
+                        if (!EventSystem.current.IsPointerOverGameObject())
+                        {
+
+                            if (hit.collider.CompareTag("Base"))
+                            {
+                                MoveCamTo(hit.collider.gameObject.GetComponentInParent<Base>());
+                                //MoveCamTo(hit.collider.gameObject.transform.parent.GetComponent<Base>());
+                                return;
+                            }
+                            else if (hit.collider.CompareTag("Agent"))
+                            {
+                                //colliders are on the individual agent stage objects (for size correctness)
+                                //These are children of the actual agent object.
+                                MoveCamTo(hit.collider.gameObject.GetComponentInParent<AgentStats>());
+                                return;
+                            }
+                        }
 					}
 				}
             }

@@ -19,7 +19,7 @@ public class SaveManager
 		public string baseName;
 		public Vector3 position;
 		public int currentStage;
-		public string baseType;
+		public string baseTypeString;
 		public float boostTime;
 		public Value heldResource;
 		public int numAgents;
@@ -78,7 +78,7 @@ public class SaveManager
 			PlayerPrefs.SetInt(baseString + "Stage", b.stage);
 
 			//base type
-			PlayerPrefs.SetString(baseString + "Type", b.baseType);
+			PlayerPrefs.SetString(baseString + "Type", b.baseTypeString);
 
 			//boost time remaining
 			PlayerPrefs.SetFloat(baseString + "BoostTime", b.tapSeconds);
@@ -182,7 +182,7 @@ public class SaveManager
 			b.currentStage = PlayerPrefs.GetInt(baseString + "Stage");
 
 			//base type
-			b.baseType = PlayerPrefs.GetString(baseString + "Type");
+			b.baseTypeString = PlayerPrefs.GetString(baseString + "Type");
 
 			//boost time remaining
 			b.boostTime = PlayerPrefs.GetFloat(baseString + "BoostTime");

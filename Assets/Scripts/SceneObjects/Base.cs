@@ -11,11 +11,13 @@ public class Base : MonoBehaviour
 	"The Shard", "Castle", "The Den", "Queen's Chambers", "Flat 35", "The Royal Court", "Skylab", "Salyut", "ISS",
 	"TianGong", "Kosmos", "Mir", "Genesis", "OPS 0855", "DOS-2", "Gateway", "Springer", "Habitat", "Shuttle"};
 
+	[NonSerialized]
 	public string baseName;
 
 	public GameObject[] baseStages = new GameObject[5];
 
-    public float[] sphereScalingFactors = new float[5];
+	//TODO?
+	public float[] sphereScalingFactors = new float[5];
 
     private Value heldResource = 0;
 	public Value HeldResource {get { return heldResource;  } set { heldResource = value; } }
@@ -26,22 +28,31 @@ public class Base : MonoBehaviour
 
 	private Value maxLoadGain = 0.0f;
 
+	[NonSerialized]
 	public int stage = 0;
+
+	[NonSerialized]
     public int numBuilds = 0;
 
 	[SerializeField]
 	public Vector3 rotationFactor;
 
-    public string baseType;
+	[NonSerialized]
+	public string baseTypeString;
 
-    // for tap mechanic to boost agents
-    public float tapSeconds = 0.0f;
-    public float increasePercent = 0.0f;
+	// for tap mechanic to boost agents
+	[NonSerialized]
+	public float tapSeconds = 0.0f;
+
+	[NonSerialized]
+	public float increasePercent = 0.0f;
 
     public GameObject agentDefaultTarget;
 
-    public GameObject buildSphere;
+	[NonSerialized]
+	public GameObject buildSphere;
 
+	[NonSerialized]
 	public List<AgentGameplay> agents = new List<AgentGameplay>();
 
 	[System.NonSerialized]
@@ -50,6 +61,7 @@ public class Base : MonoBehaviour
 	private GameManager gameManager;
 
 	//used to identify the base during save/load
+	[NonSerialized]
 	public int ID;
 
     private void Awake()
@@ -64,8 +76,8 @@ public class Base : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        baseType = gameObject.name.Contains("Clone") ? gameObject.name.Substring(5, gameObject.name.Length - 5 - 7) : gameObject.name.Substring(5);
-        GameObject agentPrefab = (GameObject)Resources.Load("Agent_" + baseType, typeof(GameObject));
+		baseTypeString = gameObject.name.Contains("Clone") ? gameObject.name.Substring(5, gameObject.name.Length - 5 - 7) : gameObject.name.Substring(5);
+        GameObject agentPrefab = (GameObject)Resources.Load("Agent_" + baseTypeString, typeof(GameObject));
 
         baseStages[stage].SetActive(true);
 
@@ -130,7 +142,7 @@ public class Base : MonoBehaviour
 		ID = bData.ID;
 		baseName = bData.baseName;
 		stage = bData.currentStage;
-		baseType = bData.baseType;
+		baseTypeString = bData.baseTypeString;
 		tapSeconds = bData.boostTime;
 		heldResource = bData.heldResource;
 
@@ -161,7 +173,7 @@ public class Base : MonoBehaviour
 		float gain = 0.0f;
 		maxResourceCollect = 0.0f;
 
-		GameObject agentPrefab = (GameObject)Resources.Load("Agent_" + baseType, typeof(GameObject));
+		GameObject agentPrefab = (GameObject)Resources.Load("Agent_" + baseTypeString, typeof(GameObject));
 
 		//agents are spawned in a circle around base when loading. might be better ways to do this in the future.
 		//e.g. spawn en-route to resources or come out of the base one-by-one.
@@ -227,15 +239,17 @@ public class Base : MonoBehaviour
 		heldResource += fVal;
     }
 
-
-    public int baseVal = 50;
-    public int multiplePerUpgrade = 1;
-    //multiple is done before power
-    public int powerPerUpgrade = 2; 
+	[Header("Upgrade Settings")]
+	[Tooltip("Base Cost for each Upgrade")]
+    public int upgradeBaseCost = 50;
+	[Tooltip("Multiple of Base Cost for Upgrade")]
+	public int multiplePerUpgrade = 1;
+	[Tooltip("Number of Powers")]
+	public int powerPerUpgrade = 2; 
 
     public int requiredToUpgrade()
     {
         int stageVal = stage + 1;
-        return ((baseVal * multiplePerUpgrade) * stageVal) ^ stageVal ^ powerPerUpgrade;
+        return ((upgradeBaseCost * multiplePerUpgrade) * stageVal) ^ stageVal ^ powerPerUpgrade;
     }
 }

@@ -70,7 +70,7 @@ public class BuildManager : MonoBehaviour
 		{
 			SaveManager.BaseData data = bases[i];
 
-			GameObject asset = Resources.Load("Base_" + data.baseType) as GameObject;
+			GameObject asset = Resources.Load("Base_" + data.baseTypeString) as GameObject;
 
 			BuildBase(asset, data.position, out Base b);
 			allBases.Add(b);
@@ -241,7 +241,7 @@ public class BuildManager : MonoBehaviour
 		bool hit = false;
 		Vector3 spawnPos = GetBuildSpherePos(false, ref hit);
 
-		string s = isFreshBuild ? baseType : refBase.baseType;
+		string s = isFreshBuild ? baseType : refBase.baseTypeString;
 		assetToBuild = Resources.Load("Base_" + s) as GameObject;
 
 		//beingBuilt = Instantiate(assetToBuild, spawnPos, Quaternion.identity);

@@ -79,7 +79,7 @@ public class BuildManager : MonoBehaviour
 		}
 
 		//total available spawns
-		float A = (100 / (resourceSpawner.spawnRate / gameManager.resourceSpawnRate) / (float)totalAgents);
+		float A = (100 / (resourceSpawner.spawnRate / gameManager.resourceSpawner.resourceSpawnRateUpgrade) / (float)totalAgents);
 
 		float ratioAvailable = A / totalRes;
 
@@ -130,7 +130,7 @@ public class BuildManager : MonoBehaviour
 
     void EndIntroBuild()
     {
-
+        gameManager.maxBaseTier = 1;
         //TODO: Remove/rework this for actual introduction.
         gameManager.finishedIntroduction = true;
     }
@@ -304,8 +304,8 @@ public class BuildManager : MonoBehaviour
 
         beingBuilt.transform.eulerAngles = new Vector3(UnityEngine.Random.Range(0.0f, 360.0f), UnityEngine.Random.Range(0.0f, 360.0f), UnityEngine.Random.Range(0.0f, 360.0f));
 
-		if(!isFreshBuild)
-			referanceBase.HeldResource -= referanceBase.ReqToBuild;
+        if (!isFreshBuild)
+            referanceBase.DeductResources(false); //false: isUpgrade
 
 		inputManager.MoveCamTo(beingBuilt.GetComponent<Base>());
 
@@ -316,6 +316,10 @@ public class BuildManager : MonoBehaviour
 			referanceBase.numBuilds++;
 			beingBuiltBaseComp.numBuilds = referanceBase.numBuilds;
 		}
+
+        if (isFreshBuild)
+            gameManager.maxBaseTier++;
+
         pickedBuildTarget = false;
 
 		beingBuilt = null;

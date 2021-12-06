@@ -529,6 +529,9 @@ public class Pathfinder : MonoBehaviour
 		if (nodeZ < 0)
 			nodeZ = 0;
 
+        if(grid == null)
+            Debug.Log("ReturnNodeFromVector3 shit the bed. Grid is null...");
+
         Node ret = grid[nodeX, nodeY, nodeZ];
 
         if (ret == null)

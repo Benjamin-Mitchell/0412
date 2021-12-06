@@ -21,7 +21,8 @@ public class SaveManager
 		public int currentStage;
 		public string baseTypeString;
 		public float boostTime;
-		public Value heldResource;
+		public int baseTier;
+		public Value[] heldResources;
 		public int numAgents;
 		public List<AgentData> agentDatas;
 	}
@@ -39,7 +40,7 @@ public class SaveManager
 		PlayerPrefs.SetInt("FinishedIntroduction", gameManager.finishedIntroduction ? 1 : 0);
 
 		//Spawn Rate
-		PlayerPrefs.SetFloat("SpawnRate", gameManager.resourceSpawnRate);
+		PlayerPrefs.SetFloat("SpawnRate", gameManager.resourceSpawner.resourceSpawnRateUpgrade);
 		SaveCustomValue("SpawnRateCost", gameManager.spawnRateIncreaseCost);
 
 		//Value Multiplier
@@ -53,6 +54,9 @@ public class SaveManager
 		//Max Period Inactive
 		PlayerPrefs.SetFloat("MaxPeriodInactive", gameManager.maxPeriodInactive);
 		SaveCustomValue("MaxPeriodInactiveCost", gameManager.maxInactiveIncreaseCost);
+
+		//Max Base Tier
+		PlayerPrefs.SetInt("MaxBaseTier", gameManager.maxBaseTier);
 
 		//Number of bases saved
 		PlayerPrefs.SetInt("NumberOfBases", allBases.Count);
@@ -84,9 +88,13 @@ public class SaveManager
 			PlayerPrefs.SetFloat(baseString + "BoostTime", b.tapSeconds);
 
 			//held resource
-			Value v = b.HeldResource;
-			PlayerPrefs.SetFloat(baseString + "Val", v.GetRawVal());
-			PlayerPrefs.SetInt(baseString + "Denotation", v.GetRawDenotation());
+			PlayerPrefs.SetInt(baseString + "Tier", b.baseTier);
+			for (int j = 0; j <= b.baseTier; j++)
+			{
+				Value v = b.heldResources[j];
+				PlayerPrefs.SetFloat(baseString + "Val" + j, v.GetRawVal());
+				PlayerPrefs.SetInt(baseString + "Denotation" + j, v.GetRawDenotation());
+			}
 
 			//number of agents
 			PlayerPrefs.SetInt(baseString + "NumAgents", b.numAgents);
@@ -145,7 +153,7 @@ public class SaveManager
 		gameManager.finishedIntroduction = PlayerPrefs.GetInt("FinishedIntroduction") > 0 ? true : false;
 
 		//Spawn Rate
-		gameManager.resourceSpawnRate =  PlayerPrefs.HasKey("SpawnRate") ? PlayerPrefs.GetFloat("SpawnRate") : gameManager.resourceSpawnRate;
+		gameManager.resourceSpawner.resourceSpawnRateUpgrade =  PlayerPrefs.HasKey("SpawnRate") ? PlayerPrefs.GetFloat("SpawnRate") : gameManager.resourceSpawner.resourceSpawnRateUpgrade;
 		gameManager.spawnRateIncreaseCost =  LoadCustomValue("SpawnRateCost", out v) ? v : gameManager.spawnRateIncreaseCost;
 
 		//Value Multiplier
@@ -159,6 +167,9 @@ public class SaveManager
 		//Max Period Inactive
 		gameManager.maxPeriodInactive = PlayerPrefs.HasKey("MaxPeriodInactive") ? PlayerPrefs.GetFloat("MaxPeriodInactive") : gameManager.maxPeriodInactive;
 		gameManager.maxInactiveIncreaseCost = LoadCustomValue("MaxPeriodInactiveCost", out v) ? v : gameManager.maxInactiveIncreaseCost;
+
+		//Max Base Tier
+		gameManager.maxBaseTier = PlayerPrefs.GetInt("MaxBaseTier");
 
 
 		for (int i = 0; i < numBases; i++)
@@ -188,9 +199,14 @@ public class SaveManager
 			b.boostTime = PlayerPrefs.GetFloat(baseString + "BoostTime");
 
 			//held resource
-			float val = PlayerPrefs.GetFloat(baseString + "Val");
-			int denotation = PlayerPrefs.GetInt(baseString + "Denotation");
-			b.heldResource = new Value(val, (Value.Denotation)denotation);
+			b.baseTier = PlayerPrefs.GetInt(baseString + "Tier");
+			b.heldResources = new Value[b.baseTier];
+			for (int j = 0; j < b.baseTier; j++)
+			{
+				float val = PlayerPrefs.GetFloat(baseString + "Val" + j);
+				int denotation = PlayerPrefs.GetInt(baseString + "Denotation" + j);
+				b.heldResources[j] = new Value(val, (Value.Denotation)denotation);
+			}
 
 			//number of agents
 			b.numAgents = PlayerPrefs.GetInt(baseString + "NumAgents");

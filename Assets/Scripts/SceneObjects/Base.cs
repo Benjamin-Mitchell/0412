@@ -16,15 +16,22 @@ public class Base : MonoBehaviour
 
 	public GameObject[] baseStages = new GameObject[5];
 
-	//TODO?
+	//TODO? Or should each base have a static scaling factor, since it will eventually scale up?
 	public float[] sphereScalingFactors = new float[5];
 
-    private Value heldResource = 0;
-	public Value HeldResource {get { return heldResource;  } set { heldResource = value; } }
-    private Value reqToUpgrade = 0;
-    public Value ReqToUpgrade { get { return reqToUpgrade; } set { reqToUpgrade = value; } }
-	private Value reqToBuild = 0;
-	public Value ReqToBuild { get { return reqToBuild; } set { reqToBuild = value; } }
+	public Value[] heldResources;
+
+	//private Value heldResource = 0;
+	//public Value HeldResource {get { return heldResource;  } set { heldResource = value; } }
+
+	public Value[] reqsToUpgrade;
+
+	//private Value reqToUpgrade = 0;
+	//public Value ReqToUpgrade { get { return reqToUpgrade; } set { reqToUpgrade = value; } }
+
+	public Value[] reqsToBuild;
+	//private Value reqToBuild = 0;
+	//public Value ReqToBuild { get { return reqToBuild; } set { reqToBuild = value; } }
 
 	private Value maxLoadGain = 0.0f;
 
@@ -39,6 +46,8 @@ public class Base : MonoBehaviour
 
 	[NonSerialized]
 	public string baseTypeString;
+
+	public int baseTier;
 
 	// for tap mechanic to boost agents
 	[NonSerialized]
@@ -76,6 +85,13 @@ public class Base : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+		heldResources = new Value[baseTier + 1];
+
+		for(int i = 0; i < heldResources.Length; i++)
+		{
+			heldResources[i] = 0;
+		}
+
 		baseTypeString = gameObject.name.Contains("Clone") ? gameObject.name.Substring(5, gameObject.name.Length - 5 - 7) : gameObject.name.Substring(5);
         GameObject agentPrefab = (GameObject)Resources.Load("Agent_" + baseTypeString, typeof(GameObject));
 
@@ -84,7 +100,7 @@ public class Base : MonoBehaviour
 		if(numAgents == 0)
 			AddAgent(agentPrefab, transform.position + transform.forward, out AgentGameplay a);
 
-        reqToUpgrade = requiredToUpgrade();
+        reqsToUpgrade = RequiredToUpgrade();
 
 		gameManager = GameManager.Instance;
 	}
@@ -97,13 +113,15 @@ public class Base : MonoBehaviour
         //DEBUG ONLY
         if(Input.GetKeyDown(KeyCode.G))
         {
-            heldResource += 100;
+			for(int i = 0; i < heldResources.Length; i++)
+				heldResources[i] += 100;
         }
 		
 		//DEBUG ONLY
 		if(Input.GetKeyDown(KeyCode.H))
 		{
-			heldResource += 100000000;
+			for (int i = 0; i < heldResources.Length; i++)
+				heldResources[i] += 100000000;
 		}
 	}
 
@@ -115,11 +133,33 @@ public class Base : MonoBehaviour
 		numAgents++;
 	}
 
-    public void UpgradeBase()
+	public bool CanBuildBase()
+	{
+		for (int i = 0; i < heldResources.Length; i++)
+		{
+			if (heldResources[i] < reqsToBuild[i])
+				return false;
+		}
+
+		return true;
+	}
+
+	//false if failed to upgrade
+	public bool UpgradeBase()
     {
         if (IsFullyUpgraded())
-            return;
-        heldResource -= reqToUpgrade;
+            return false;
+
+		//check if we have the resources available
+		for(int i = 0; i < heldResources.Length; i++)
+		{
+			if (heldResources[i] < reqsToUpgrade[i])
+				return false;
+		}
+
+		for (int i = 0; i < heldResources.Length; i++)
+			heldResources[i] -= reqsToUpgrade[i];
+
         baseStages[stage].SetActive(false);
         stage++;
 
@@ -127,7 +167,8 @@ public class Base : MonoBehaviour
             agents[i].setStage(stage);
 
         baseStages[stage].SetActive(true);
-        reqToUpgrade = requiredToUpgrade();
+        reqsToUpgrade = RequiredToUpgrade();
+		return true;
     }
 
     public bool IsFullyUpgraded()
@@ -144,7 +185,7 @@ public class Base : MonoBehaviour
 		stage = bData.currentStage;
 		baseTypeString = bData.baseTypeString;
 		tapSeconds = bData.boostTime;
-		heldResource = bData.heldResource;
+		heldResources = bData.heldResources;
 
 		int agentsToLoad = bData.numAgents;
 
@@ -165,7 +206,7 @@ public class Base : MonoBehaviour
 		// gained = T * (R * moveSpeed) * (A * V)
 
 		float R = 1.4f;
-		float A = (100 / (spawnRate / gameManager.resourceSpawnRate) / (float)totalAgents);
+		float A = (100 / (spawnRate / gameManager.resourceSpawner.resourceSpawnRateUpgrade) / (float)totalAgents);
 		double t = difference.TotalSeconds / 100.0;
 		float T = Mathf.Min((float)t, gameManager.maxPeriodInactive);
 		float V = 5;
@@ -206,7 +247,13 @@ public class Base : MonoBehaviour
 	//actual resource gain needs to take into account globally available resource after all other agents & bases take a slice.
 	public void LoadSetupFinalize(float ratioAvailable)
 	{
-		heldResource += (maxLoadGain * ratioAvailable);
+		//Some way of determining how much of each resource would have been available is needed
+		//e.g. 10% teabag, 20% pie etc. etc.
+		for(int i = 0; i < heldResources.Length; i++)
+		{
+			heldResources[i] += (maxLoadGain * ratioAvailable * gameManager.resourceSpawner.resourceSpawnRates[i]);
+		}
+		
 	}
 
 	public void AddResourcesOverTime(Value val, float time)
@@ -215,28 +262,29 @@ public class Base : MonoBehaviour
 
 		Value mulVal = val * percent;
 
-		StartCoroutine(IncrementResourceOverTime(mulVal, time));
+		for(int i = 0; i < heldResources.Length; i++)
+			StartCoroutine(IncrementResourceOverTime(mulVal, time, i));	
 	}
 
-	public IEnumerator IncrementResourceOverTime(Value val, float time)
+	public IEnumerator IncrementResourceOverTime(Value val, float time, int index)
 	{
 		float timePassed = 0;
 
 		while (timePassed < time)
 		{
 			Value increment = val * (Time.deltaTime / time);
-			heldResource += increment;
+			heldResources[index] += increment;
 			gameManager.AddUnits(increment);
 			timePassed += Time.deltaTime;
 			yield return null;
 		}
 	}
 
-	public void addResources(int val)
+	public void addResources(int val, int index)
     {
         float percent = 1.0f + (increasePercent / 100.0f);
         float fVal = (float)val * percent;
-		heldResource += fVal;
+		heldResources[index] += fVal;
     }
 
 	[Header("Upgrade Settings")]
@@ -247,9 +295,36 @@ public class Base : MonoBehaviour
 	[Tooltip("Number of Powers")]
 	public int powerPerUpgrade = 2; 
 
-    public int requiredToUpgrade()
+    public Value[] RequiredToUpgrade()
     {
         int stageVal = stage + 1;
-        return ((upgradeBaseCost * multiplePerUpgrade) * stageVal) ^ stageVal ^ powerPerUpgrade;
+		Value[] temp = new Value[heldResources.Length];
+		int i = heldResources.Length - 1;
+		int baseCost = ((upgradeBaseCost * multiplePerUpgrade) * stageVal) ^ stageVal ^ powerPerUpgrade;
+		while(i >= 0)
+		{
+			temp[i] = baseCost;
+			baseCost /= 4;
+			i--;
+		}
+		return temp;
     }
+
+	//TODO: Make this better, use some cooler maths
+	public void RequiredToBuild()
+	{
+		reqsToBuild = new Value[heldResources.Length];
+		for (int j = 0; j < heldResources.Length; j++)
+			reqsToBuild[j] = Value.Pow(Value.Pow(reqsToUpgrade[j], 1.2f), Mathf.Pow((numBuilds + 1), 1.2f));
+	}
+
+
+	//isUprade: true == upgrade, false == build
+	public void DeductResources(bool isUpgrade)
+	{
+		for(int i = 0; i < heldResources.Length; i++)
+		{
+			heldResources[i] -= isUpgrade ? reqsToUpgrade[i] : reqsToBuild[i];
+		}
+	}
 }

@@ -17,7 +17,6 @@ public class GameManager : Singleton<GameManager>
 	private Value units = 10000000;
 
 	private float currentSpawnRateIncrease = 0.4f;
-	public float resourceSpawnRate = 1.0f;
 	public Value spawnRateIncreaseCost = 600.0f;
 	
 	public float resourceValueMultiplier = 1.0f;
@@ -35,6 +34,10 @@ public class GameManager : Singleton<GameManager>
 
 	public SaveManager saveManager;
 
+	public ResourceSpawner resourceSpawner;
+
+	public int maxBaseTier = 0;
+
 	void Awake()
     {
 		maxMapDistance = Mathf.Sqrt((mapX * mapX) + (mapY * mapY) + (mapZ * mapZ));
@@ -48,6 +51,7 @@ public class GameManager : Singleton<GameManager>
 			BuildManager buildManager = GameObject.Find("BuildManager").GetComponent<BuildManager>();
 			buildManager.LoadBases(basesData, difference, totalAgents);
 		}
+		resourceSpawner.CalculateSpawnRates(maxBaseTier);
 	}
 
 	// Start is called before the first frame update
@@ -81,7 +85,7 @@ public class GameManager : Singleton<GameManager>
 
 		//spawnRateIncreaseCost = Mathf.Pow(spawnRateIncreaseCost, 2) * 2;
 		spawnRateIncreaseCost = Value.Pow(spawnRateIncreaseCost, 2) * 2;
-		resourceSpawnRate *= (1.0f + currentSpawnRateIncrease);
+		resourceSpawner.resourceSpawnRateUpgrade *= (1.0f + currentSpawnRateIncrease);
 
 		//has diminishing returns to avoid insane numbers of resources
 		currentSpawnRateIncrease *= 0.9f;

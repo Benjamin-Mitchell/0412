@@ -85,8 +85,8 @@ public class UIManager : MonoBehaviour
 	public delegate void RevertDelegate();
 	public RevertDelegate revert;
 
-	private Value baseResource = 0;
-	private Value baseReqToUpdate = 0;
+	//private Value baseResource = 0;
+	//private Value baseReqToUpdate = 0;
 	private bool fullyUpgraded = false;
 	private Base baseRef = null;
 
@@ -101,7 +101,7 @@ public class UIManager : MonoBehaviour
     void Start()
     {
 		gameManager = GameManager.Instance;
-		spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.resourceSpawnRate + "\nUpgrade (" + gameManager.spawnRateIncreaseCost.GetStringVal() + " U)";
+		spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.resourceSpawner.resourceSpawnRateUpgrade + "\nUpgrade (" + gameManager.spawnRateIncreaseCost.GetStringVal() + " U)";
 		resourceValueUpgradeText.text = "Resource Value Multiplier: " + gameManager.resourceValueMultiplier + "\nUpgrade (" + gameManager.resourceValueIncreaseCost.GetStringVal() + " U)";
 		unitReturnRateUpgradeText.text = "Unit Return Rate: " + gameManager.unitReturnRate + "\nUpgrade (" + gameManager.unitReturnIncreaseCost.GetStringVal() + " U)";
 		MaxInactiveUpgradeText.text = "Max Period Inactive: " + (gameManager.maxPeriodInactive * 100 / 60) + " minutes\nUpgrade (" + gameManager.maxInactiveIncreaseCost.GetStringVal() + " U)";
@@ -132,7 +132,13 @@ public class UIManager : MonoBehaviour
 
     private void UpdateUpgradeVisual()
     {
-        resourceText.text = baseRef.HeldResource.GetStringVal();
+		string temp = "";
+		for(int i = 0; i < baseRef.heldResources.Length; i++)
+		{
+			temp += baseRef.heldResources[i].GetStringVal() + "/" + baseRef.reqsToUpgrade[i].GetStringVal() + "\n";
+
+		}
+		resourceText.text = temp;
 
         if (fullyUpgraded)
         {
@@ -141,10 +147,11 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        baseResource = baseRef.HeldResource;
-        baseReqToUpdate = baseRef.ReqToUpgrade;
+		Value baseResource = Value.GetSumOfArray(baseRef.heldResources);
+		Value baseReqToUpdate = Value.GetSumOfArray(baseRef.reqsToUpgrade);
 
-        float percent = (baseResource / baseReqToUpdate).ToFloat();
+
+		float percent = (baseResource / baseReqToUpdate).ToFloat();
         percent = Mathf.Clamp(percent, 0.0f, 1.0f);
 
         float r = 1.0f - percent;
@@ -169,10 +176,18 @@ public class UIManager : MonoBehaviour
 
         buildText.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 
-        // costs reqToUpgrade ^ 2;
-        buildText.text = "Build (" + baseRef.ReqToBuild.GetStringVal() + ")";
+		string temp = "";
+		for (int i = 0; i < baseRef.heldResources.Length; i++)
+		{
+			temp += baseRef.heldResources[i].GetStringVal() + "/" + baseRef.reqsToBuild[i].GetStringVal() + "\n";
 
-        float percent = (baseRef.HeldResource / baseRef.ReqToBuild).ToFloat();
+		}
+		buildText.text = temp;
+
+		Value baseResource = Value.GetSumOfArray(baseRef.heldResources);
+		Value baseReqToBuild = Value.GetSumOfArray(baseRef.reqsToBuild);
+
+		float percent = (baseResource / baseReqToBuild).ToFloat();
         float r = 1.0f - percent;
         float g = percent;
 
@@ -256,7 +271,7 @@ public class UIManager : MonoBehaviour
 		active = UIACTIVE.Base;
         baseRef = b;
 		baseNameText.text = baseRef.baseName;
-        RecalculateBuildReq();
+        baseRef.RequiredToBuild();
 		baseUI.SetActive(true);
         fullyUpgraded = baseRef.IsFullyUpgraded();
     }
@@ -287,20 +302,19 @@ public class UIManager : MonoBehaviour
 
     public void UpgradeBase()
     {
-        if (baseRef.HeldResource > baseRef.ReqToUpgrade)
-        {
-            baseRef.UpgradeBase();
-            fullyUpgraded = baseRef.IsFullyUpgraded();
-        }
-        RecalculateBuildReq();
-    }
+		if (baseRef.UpgradeBase())
+		{
+			fullyUpgraded = baseRef.IsFullyUpgraded();
+			baseRef.RequiredToBuild();
+		}
+	}
 
-    public void BuildProcess()
+	public void BuildProcess()
     {
-        if (baseRef.HeldResource < baseRef.ReqToBuild)
-            return;
+		if (!baseRef.CanBuildBase())
+			return;
 
-        RecalculateBuildReq();
+        baseRef.RequiredToBuild();
 
 		// disable UI (except return arrow).
 		baseUI.SetActive(false);
@@ -388,7 +402,7 @@ public class UIManager : MonoBehaviour
 	{
 		if(gameManager.IncrementSpawnRate())
 		{
-			spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.resourceSpawnRate + "\nUpgrade (" + gameManager.spawnRateIncreaseCost + " U)";
+			spawnRateUpgradeText.text = "Resource Spawn Rate: " + gameManager.resourceSpawner.resourceSpawnRateUpgrade + "\nUpgrade (" + gameManager.spawnRateIncreaseCost + " U)";
 		}
 	}
 
@@ -416,11 +430,6 @@ public class UIManager : MonoBehaviour
 			MaxInactiveUpgradeText.text = "Max Period Inactive: " + (gameManager.maxPeriodInactive * 100 / 60) + " minutes\nUpgrade (" + gameManager.maxInactiveIncreaseCost + " U)";
 		}
 	}
-
-	private void RecalculateBuildReq()
-    {
-		baseRef.ReqToBuild = Value.Pow(Value.Pow(baseRef.ReqToUpgrade, 1.2f), Mathf.Pow((baseRef.numBuilds + 1), 1.2f));
-    }
 
     public void addTapBoost()
     {

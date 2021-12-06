@@ -300,8 +300,18 @@ public class Value
 		return (int)denotation;
 	}
 
-    // Start is called before the first frame update
-    void Start()
+	static public Value GetSumOfArray(Value[] array)
+	{
+		Value temp = 0;
+		for (int i = 0; i < array.Length; i++)
+		{
+			temp += array[i];
+		}
+		return temp;
+	}
+
+	// Start is called before the first frame update
+	void Start()
     {
         
     }
@@ -311,4 +321,12 @@ public class Value
     {
         
     }
+}
+
+
+
+public struct CarriableResource
+{
+	Value val;
+	int tier;
 }

@@ -7,6 +7,8 @@ public class Resource : MonoBehaviour
     public Value value;
     public float moveSpeed = 0.5f;
 
+    public int tier; //0: dirty, 1: pie, 2: proxy, 3: Seller, 4:Teabag
+
     Vector3 target;
 
 	private bool canMove = true;

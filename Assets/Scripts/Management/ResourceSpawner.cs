@@ -7,11 +7,16 @@ public class ResourceSpawner : MonoBehaviour
 	//Rough number of seconds between spawns (Uses some variation)
     public float spawnRate;
 
-    //input as a percentage (/100)
-    public float spawnRateVariation;
+	//percentage (/100) chance for each resource to spawn.
+	public float[] resourceSpawnRates;
 
-    //prefab for Resource
-    public List<GameObject> resources = new List<GameObject>();
+	//input as a percentage (/100)
+	public float spawnRateVariation;
+
+	public float resourceSpawnRateUpgrade = 1.0f;
+
+	//prefab for Resource
+	public List<GameObject> resources = new List<GameObject>();
 
 	public BuildManager buildManager;
 
@@ -22,18 +27,14 @@ public class ResourceSpawner : MonoBehaviour
 
 	private List<Resource> availableResources = new List<Resource>();
 
-	private GameManager gameManager;
-
 	// Start is called before the first frame update
 	void Start()
     {
-		gameManager = GameManager.Instance;
-
 		minSpawnTime = spawnRate - ((spawnRateVariation/100.0f)*spawnRate);
         maxSpawnTime = spawnRate + ((spawnRateVariation/100.0f)*spawnRate);
 
 
-        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime) / gameManager.resourceSpawnRate;
+        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime) / resourceSpawnRateUpgrade;
 	}
 
     // Update is called once per frame
@@ -58,6 +59,34 @@ public class ResourceSpawner : MonoBehaviour
 		}
     }
 
+	public void CalculateSpawnRates(int maxBaseTier)
+	{
+		if (maxBaseTier == 0)
+			resourceSpawnRates = new float[1] { 1.0f };
+		else if (maxBaseTier == 1)
+			resourceSpawnRates = new float[2] { 0.6f, 0.4f };
+		else if (maxBaseTier == 2)
+			resourceSpawnRates = new float[3] { 0.5f, 0.3f, 0.2f};
+		else if (maxBaseTier == 3)
+			resourceSpawnRates = new float[4] { 0.4f, 0.3f, 0.2f, 0.1f };
+		else if (maxBaseTier == 4)
+			resourceSpawnRates = new float[5] { 0.3f, 0.25f, 0.2f, 0.15f, 0.1f };
+	}
+
+	private int GetResourceSpawnIndex()
+	{
+		float dice = Random.Range(.0f, 1.0f);
+		float i = 0.01f;
+		int res = -1;
+		do
+		{
+			res++;
+			i += resourceSpawnRates[res];
+		} while (i < dice);
+
+		return res;
+	}
+
     void Spawn()
     {
 		int numBases = buildManager.allBases.Count;
@@ -66,7 +95,7 @@ public class ResourceSpawner : MonoBehaviour
 			return;
 		
 		spawnTimer = .0f;
-        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime) / gameManager.resourceSpawnRate;
+        nextSpawnTime = Random.Range(minSpawnTime, maxSpawnTime) / resourceSpawnRateUpgrade;
 
         //resources will move across the Z axis (constant X and Y from start)
         Vector3 spawnPos = new Vector3(
@@ -74,7 +103,7 @@ public class ResourceSpawner : MonoBehaviour
             Random.Range(.0f, (float)GameManager.Instance.mapY), 
             (float)GameManager.Instance.mapZ);
 		
-        Resource r = Instantiate(resources[Random.Range(0, resources.Count)], spawnPos, Quaternion.identity).GetComponent<Resource>();
+        Resource r = Instantiate(resources[GetResourceSpawnIndex()], spawnPos, Quaternion.identity).GetComponent<Resource>();
 
 		availableResources.Add(r);
     }

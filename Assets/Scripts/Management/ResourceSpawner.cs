@@ -109,40 +109,51 @@ public class ResourceSpawner : MonoBehaviour
     }
 
 	//return first available resource.
-	public Resource RequestResource()
+	public Resource RequestResource(int maxTier)
 	{
 		Resource r;
 
 		if (availableResources.Count == 0)
 			return null;
-		
-		r = availableResources[0];
-		availableResources.RemoveAt(0);
 
-		return r;
+		for (int i = 0; i < availableResources.Count; i++)
+		{
+			if(availableResources[i].tier <= maxTier)
+			{
+				r = availableResources[i];
+				availableResources.RemoveAt(i);
+				return r;
+			}
+		}
+		return null;
 	}
 
 	//Return resource closest to the requester.
-	public Resource RequestResource(Vector3 pos)
+	public Resource RequestResource(int maxTier, Vector3 pos)
 	{
-
 		Resource r;
 
 		if (availableResources.Count == 0)
 			return null;
 
-		float minDistance = Vector3.Distance(availableResources[0].transform.position, pos);
+		bool found = false;
+
+		float minDistance = float.MaxValue;
 		int minDistIndex = 0;
 
-		for (int i = 1; i < availableResources.Count; i++)
+		for (int i = 0; i < availableResources.Count; i++)
 		{
 			float d = Vector3.Distance(availableResources[i].transform.position, pos);
-			if (d < minDistance)
+			if (d < minDistance && availableResources[i].tier <= maxTier)
 			{
+				found = true;
 				minDistance = d;
 				minDistIndex = i;
 			}
 		}
+
+		if (!found)
+			return null;
 
 		r = availableResources[minDistIndex];
 		availableResources.RemoveAt(minDistIndex);

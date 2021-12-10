@@ -15,6 +15,8 @@ public class AgentGameplay : MonoBehaviour
 
 	public AgentStats stats;
 
+	public int maxAcquirableResourceTier;
+
     public enum State
     {
         UnderSpawnOrders,
@@ -40,6 +42,8 @@ public class AgentGameplay : MonoBehaviour
 
     //how much value am I currently carrying
     private Value carryingValue;
+	private int carryingTier;
+
 
 	private void Awake()
 	{
@@ -78,7 +82,7 @@ public class AgentGameplay : MonoBehaviour
             case State.ChasingResource:
 
 				if (resourceTarget == null)
-					resourceTarget = resourceSpawner.RequestResource(transform.position);
+					resourceTarget = resourceSpawner.RequestResource(maxAcquirableResourceTier, transform.position);
 
 
 				// TODO: need to modify distance to resource beforce collecting it
@@ -86,6 +90,7 @@ public class AgentGameplay : MonoBehaviour
                 {
                     // Get Resource
                     carryingValue = resourceTarget.value;
+					carryingTier = resourceTarget.tier;
 					
 					BeginLoading();
 					break;
@@ -125,6 +130,7 @@ public class AgentGameplay : MonoBehaviour
 					agentPathfinding.AllowPathTraversal(true);
 					loadingTime = .0f;
 
+					//TODO: extend stats to support multiple resource types?
 					stats.resourceCollected += carryingValue;
 					carryingValue = .0f;
 
@@ -133,7 +139,7 @@ public class AgentGameplay : MonoBehaviour
 				}
 
 				if(resourceTarget == null)
-					resourceTarget = resourceSpawner.RequestResource(transform.position);
+					resourceTarget = resourceSpawner.RequestResource(maxAcquirableResourceTier, transform.position);
 
 				break;
 			case State.Idle:
@@ -158,7 +164,7 @@ public class AgentGameplay : MonoBehaviour
 				}
 				else
 				{
-					resourceTarget = resourceSpawner.RequestResource(transform.position);
+					resourceTarget = resourceSpawner.RequestResource(maxAcquirableResourceTier, transform.position);
 				}
 
 				break;
@@ -193,13 +199,13 @@ public class AgentGameplay : MonoBehaviour
 	private void BeginUnloading()
 	{
 		//check here too
-		resourceTarget = resourceSpawner.RequestResource(transform.position);
+		resourceTarget = resourceSpawner.RequestResource(maxAcquirableResourceTier, transform.position);
 		agentPathfinding.SetOrbitTarget(associatedBase.gameObject);
 
 		if (resourceTarget != null)
 			agentPathfinding.SetPath(resourceTarget.gameObject);
 
-		associatedBase.AddResourcesOverTime(carryingValue, timeToLoad);
+		associatedBase.AddResourcesOverTime(carryingValue, carryingTier, timeToLoad);
 
 		state = State.UnloadingResource;
 		agentPathfinding.AllowPathTraversal(false);

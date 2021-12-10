@@ -41,17 +41,16 @@ public class GameManager : Singleton<GameManager>
 	void Awake()
     {
 		maxMapDistance = Mathf.Sqrt((mapX * mapX) + (mapY * mapY) + (mapZ * mapZ));
-		
 
 		//this is where loading happens (if there is anything to load)
 		saveManager = new SaveManager();
 		if(saveManager.Load(this, out List<SaveManager.BaseData> basesData, out TimeSpan difference, out int totalAgents))
 		{
+			resourceSpawner.CalculateSpawnRates(maxBaseTier);
 			Debug.Log("Game Manager Loading!");
 			BuildManager buildManager = GameObject.Find("BuildManager").GetComponent<BuildManager>();
 			buildManager.LoadBases(basesData, difference, totalAgents);
 		}
-		resourceSpawner.CalculateSpawnRates(maxBaseTier);
 	}
 
 	// Start is called before the first frame update

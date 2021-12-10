@@ -92,6 +92,9 @@ public class Base : MonoBehaviour
 			heldResources[i] = 0;
 		}
 
+		for (int i = 0; i < agents.Count; i++)
+			agents[i].maxAcquirableResourceTier = baseTier;
+
 		baseTypeString = gameObject.name.Contains("Clone") ? gameObject.name.Substring(5, gameObject.name.Length - 5 - 7) : gameObject.name.Substring(5);
         GameObject agentPrefab = (GameObject)Resources.Load("Agent_" + baseTypeString, typeof(GameObject));
 
@@ -256,14 +259,14 @@ public class Base : MonoBehaviour
 		
 	}
 
-	public void AddResourcesOverTime(Value val, float time)
+	public void AddResourcesOverTime(Value val, int tier, float time)
 	{
 		float percent = (1.0f + (increasePercent / 100.0f)) * gameManager.resourceValueMultiplier;
 
 		Value mulVal = val * percent;
 
-		for(int i = 0; i < heldResources.Length; i++)
-			StartCoroutine(IncrementResourceOverTime(mulVal, time, i));	
+		//for(int i = 0; i < heldResources.Length; i++)
+		StartCoroutine(IncrementResourceOverTime(mulVal, time, tier));	
 	}
 
 	public IEnumerator IncrementResourceOverTime(Value val, float time, int index)

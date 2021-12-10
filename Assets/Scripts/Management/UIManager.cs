@@ -24,7 +24,7 @@ public class UIManager : MonoBehaviour
 	Image resourceImage;
 
 	[SerializeField]
-	Text resourceText;
+	Text upgradeText;
 
 	[SerializeField]
 	Image buildImage;
@@ -138,7 +138,7 @@ public class UIManager : MonoBehaviour
 			temp += baseRef.heldResources[i].GetStringVal() + "/" + baseRef.reqsToUpgrade[i].GetStringVal() + "\n";
 
 		}
-		resourceText.text = temp;
+		upgradeText.text = temp;
 
         if (fullyUpgraded)
         {

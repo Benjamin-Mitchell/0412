@@ -77,6 +77,11 @@ public class UIManager : MonoBehaviour
 	[SerializeField]
 	GameObject []BuyUIPages;
 
+	[SerializeField]
+	Image[] valueImages = new Image[5];
+
+	private float[] valueImagesStartY = new float[6] { -155.0f, -147.5f, -140.0f, -132.5f, -125.0f, -117.5f};
+
 	private int buyUICurrentPage = 0;
 
 	public delegate void ConfirmDelegate();
@@ -140,6 +145,10 @@ public class UIManager : MonoBehaviour
 		}
 		upgradeText.text = temp;
 
+		//place the value images in correct places.
+		PlaceValueImages();
+
+
         if (fullyUpgraded)
         {
             resourceImage.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -164,6 +173,18 @@ public class UIManager : MonoBehaviour
 
         resourceImage.transform.localScale = new Vector3(g, g, g);
     }
+
+	private void PlaceValueImages()
+	{
+		int numImages = baseRef.heldResources.Length;
+		float iteration = 15.0f;
+		float startY = valueImagesStartY[numImages];
+
+		for (int i = 0; i < baseRef.heldResources.Length; i++)
+		{
+			valueImages[i].rectTransform.anchoredPosition = new Vector2(valueImages[i].rectTransform.anchoredPosition.x, startY - (iteration * i));
+		}
+	}
 
     private void UpdateBuildVisual()
     {
@@ -273,6 +294,13 @@ public class UIManager : MonoBehaviour
 		baseNameText.text = baseRef.baseName;
         baseRef.RequiredToBuild();
 		baseUI.SetActive(true);
+		for(int i = 0; i < valueImages.Length; i++)
+		{
+			if (i <= baseRef.baseTier)
+				valueImages[i].gameObject.SetActive(true);
+			else
+				valueImages[i].gameObject.SetActive(false);
+		}
         fullyUpgraded = baseRef.IsFullyUpgraded();
     }
 

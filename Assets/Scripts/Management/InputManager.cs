@@ -128,7 +128,7 @@ public class InputManager : MonoBehaviour
                 {
                     float touchDist = Mathf.Abs(Vector2.Distance(pos0, pos1));
                     float distanceDifference = (touchDist - previousTouchDistance) * Time.deltaTime;
-                    distance += distanceDifference;
+                    distance -= distanceDifference;
                     distance = Mathf.Clamp(distance, minDistance, maxDistance);
                     previousTouchDistance = touchDist;
                 }

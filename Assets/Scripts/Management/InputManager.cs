@@ -17,7 +17,7 @@ public class InputManager : MonoBehaviour
 
     public bool inputEnabled = true;
     //
-    private bool dragging;
+    private bool dragging, dragged; // dragged is for monitoring how far a drag has gone. If a drag goes so far, we disable all other input until next tap.
     private Vector2 previousPos;
     private Vector3 camLookAt;
     //
@@ -70,7 +70,7 @@ public class InputManager : MonoBehaviour
             {
                 Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 #elif (UNITY_ANDROID || UNITY_IOS)
-            if ((Input.touchCount > 0) && (Input.GetTouch(0).phase == TouchPhase.Ended))   //might need to modify this for zooming -> rotating change
+            if ((Input.touchCount > 0) && (Input.GetTouch(0).phase == TouchPhase.Ended))
             {
                    Ray ray = Camera.main.ScreenPointToRay(Input.GetTouch(0).position);
 #endif
@@ -78,7 +78,7 @@ public class InputManager : MonoBehaviour
 
 				//don't allow object swapping if building.
 				//TODO: Should a player be allowed to tap on the object to cancel building?
-				if (!buildManager.building)
+				if (!buildManager.building && !dragged)
 				{
 					if (Physics.Raycast(ray, out hit))
 					{
@@ -102,10 +102,12 @@ public class InputManager : MonoBehaviour
 					}
 				}
             }
+
 #if ((UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR)
             else if ((Input.touchCount > 0) && (Input.GetTouch(0).phase == TouchPhase.Began))
             {
                     dragging = true;
+                    dragged = false;
                     previousPos = getInputScreenPos(0);
             }
 #endif
@@ -165,6 +167,12 @@ public class InputManager : MonoBehaviour
 
                 Vector2 currentPos = getInputScreenPos(0);
                 Vector2 direction = currentPos - previousPos;
+
+                
+                if (direction.magnitude > 0.1f)
+				{
+                    dragged = true;
+				}
 
                 previousPos = currentPos;
 

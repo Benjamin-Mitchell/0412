@@ -22,6 +22,14 @@ public class BuildManager : MonoBehaviour
     [SerializeField]
     UIManager _UIManager;
 
+    [SerializeField]
+    Material buildingMaterial;
+
+    Material[] oldMaterials;
+    MeshRenderer[] activeMeshRenderersInChildren;
+    ParticleSystem[] activeParticleSystemsInChildren;
+    TrailRenderer[] activeTrailRenderersInChildren;
+
     //Vector3 previousPos
     bool pickedBuildTarget = false;
     float rotationSpeed = 1.0f;
@@ -51,7 +59,9 @@ public class BuildManager : MonoBehaviour
 	void BuildBase(GameObject asset, Vector3 pos, out Base b)
 	{
 		beingBuilt = Instantiate(asset, pos, Quaternion.identity);
-		b = beingBuilt.GetComponent<Base>();
+
+
+        b = beingBuilt.GetComponent<Base>();
 		//allBases.Add(b);
 
 		b.ID = nextBaseID;
@@ -225,7 +235,6 @@ public class BuildManager : MonoBehaviour
         int layerMask = ~ LayerMask.GetMask("Base");
         if (Physics.Raycast(ray, out hit, 150.0f, layerMask))
         {
-            Debug.Log(hit.collider.gameObject.name);
             if (hit.collider.gameObject.name.Contains("BuildSphere"))
             {
                 result = hit.point;
@@ -252,11 +261,31 @@ public class BuildManager : MonoBehaviour
 
         beingBuiltBaseComp.baseStages[0].SetActive(false);
 
-#if (UNITY_EDITOR || UNITY_STANDALONE_WIN)
+
         beingBuiltBaseComp.baseStages[newStage].SetActive(true);
         beingBuiltBaseComp.enabled = false;
+
+        //set to building material
+        //Need to set all MeshRenderer.materials to buildingMaterial
+        ////////Probably also need to disable all active particle renderers///////////
+        activeMeshRenderersInChildren = beingBuilt.GetComponentsInChildren<MeshRenderer>();
+        oldMaterials = new Material[activeMeshRenderersInChildren.Length];
+        for (int i = 0; i < oldMaterials.Length; i++)
+        {
+            oldMaterials[i] = activeMeshRenderersInChildren[i].material;
+            activeMeshRenderersInChildren[i].material = buildingMaterial;
+        }
+        activeParticleSystemsInChildren = beingBuilt.GetComponentsInChildren<ParticleSystem>();
+        foreach(ParticleSystem p in activeParticleSystemsInChildren)
+            p.gameObject.SetActive(false);
+        activeTrailRenderersInChildren = beingBuilt.GetComponentsInChildren<TrailRenderer>();
+        foreach (TrailRenderer t in activeTrailRenderersInChildren)
+            t.gameObject.SetActive(false);
+
+#if (UNITY_ANDROID || UNITY_IOS)
+        beingBuiltBaseComp.baseStages[newStage].SetActive(false);
 #endif
-		foreach(Base b in allBases)
+        foreach (Base b in allBases)
 		{
 			b.buildSphere.SetActive(true);
             //build sphere size is flat value (15.0f) + (new_stage * 3.0f);
@@ -299,8 +328,15 @@ public class BuildManager : MonoBehaviour
 		beingBuiltBaseComp.enabled = true;
 		allBases.Add(beingBuiltBaseComp);
 
-		//update sphere position for new base (in its final position)
-		beingBuiltBaseComp.buildSphere.transform.position = beingBuiltBaseComp.gameObject.transform.position;
+        for (int i = 0; i < oldMaterials.Length; i++)
+            activeMeshRenderersInChildren[i].material = oldMaterials[i];
+        foreach (ParticleSystem p in activeParticleSystemsInChildren)
+            p.gameObject.SetActive(true);
+        foreach (TrailRenderer t in activeTrailRenderersInChildren)
+            t.gameObject.SetActive(true);
+
+        //update sphere position for new base (in its final position)
+        beingBuiltBaseComp.buildSphere.transform.position = beingBuiltBaseComp.gameObject.transform.position;
 
         beingBuilt.transform.eulerAngles = new Vector3(UnityEngine.Random.Range(0.0f, 360.0f), UnityEngine.Random.Range(0.0f, 360.0f), UnityEngine.Random.Range(0.0f, 360.0f));
 

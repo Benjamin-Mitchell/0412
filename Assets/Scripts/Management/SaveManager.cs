@@ -56,7 +56,7 @@ public class SaveManager
 		SaveCustomValue("MaxPeriodInactiveCost", gameManager.maxInactiveIncreaseCost);
 
 		//Max Base Tier
-		PlayerPrefs.SetInt("MaxBaseTier", gameManager.maxBaseTier);
+		PlayerPrefs.SetInt("MaxBaseTier", gameManager.maxBaseTypeInScene);
 
 		//Number of bases saved
 		PlayerPrefs.SetInt("NumberOfBases", allBases.Count);
@@ -88,8 +88,8 @@ public class SaveManager
 			PlayerPrefs.SetFloat(baseString + "BoostTime", b.tapSeconds);
 
 			//held resource
-			PlayerPrefs.SetInt(baseString + "Tier", b.baseTier);
-			for (int j = 0; j <= b.baseTier; j++)
+			PlayerPrefs.SetInt(baseString + "Tier", b.baseType);
+			for (int j = 0; j <= b.baseType; j++)
 			{
 				Value v = b.heldResources[j];
 				PlayerPrefs.SetFloat(baseString + "Val" + j, v.GetRawVal());
@@ -169,7 +169,7 @@ public class SaveManager
 		gameManager.maxInactiveIncreaseCost = LoadCustomValue("MaxPeriodInactiveCost", out v) ? v : gameManager.maxInactiveIncreaseCost;
 
 		//Max Base Tier
-		gameManager.maxBaseTier = PlayerPrefs.GetInt("MaxBaseTier");
+		gameManager.maxBaseTypeInScene = PlayerPrefs.GetInt("MaxBaseTier");
 
 
 		for (int i = 0; i < numBases; i++)

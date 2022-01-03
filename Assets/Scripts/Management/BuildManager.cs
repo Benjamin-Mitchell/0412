@@ -130,7 +130,7 @@ public class BuildManager : MonoBehaviour
 
     void EndIntroBuild()
     {
-        gameManager.maxBaseTier = 1;
+        gameManager.SetResourceSpawnRates(0);
         //TODO: Remove/rework this for actual introduction.
         gameManager.finishedIntroduction = true;
     }
@@ -318,7 +318,9 @@ public class BuildManager : MonoBehaviour
 		}
 
         if (isFreshBuild)
-            gameManager.maxBaseTier++;
+        {
+            gameManager.SetResourceSpawnRates(beingBuiltBaseComp.baseType);
+        }
 
         pickedBuildTarget = false;
 

@@ -36,7 +36,7 @@ public class GameManager : Singleton<GameManager>
 
 	public ResourceSpawner resourceSpawner;
 
-	public int maxBaseTier = 0;
+	public int maxBaseTypeInScene = 0;
 
 	void Awake()
     {
@@ -46,7 +46,7 @@ public class GameManager : Singleton<GameManager>
 		saveManager = new SaveManager();
 		if(saveManager.Load(this, out List<SaveManager.BaseData> basesData, out TimeSpan difference, out int totalAgents))
 		{
-			resourceSpawner.CalculateSpawnRates(maxBaseTier);
+			resourceSpawner.CalculateSpawnRates(maxBaseTypeInScene);
 			Debug.Log("Game Manager Loading!");
 			BuildManager buildManager = GameObject.Find("BuildManager").GetComponent<BuildManager>();
 			buildManager.LoadBases(basesData, difference, totalAgents);
@@ -64,6 +64,12 @@ public class GameManager : Singleton<GameManager>
     {
         
     }
+
+	public void SetResourceSpawnRates(int baseType)
+	{
+		maxBaseTypeInScene = maxBaseTypeInScene < baseType ? baseType : maxBaseTypeInScene;
+		resourceSpawner.CalculateSpawnRates(maxBaseTypeInScene);
+	}
 
 	public void AddUnits(Value v)
 	{

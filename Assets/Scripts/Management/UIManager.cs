@@ -221,10 +221,8 @@ public class UIManager : MonoBehaviour
 
     private void UpdateTapBoostVisual()
     {
-        if (baseRef.tapSeconds <= 0)
-            return;
-
-        baseRef.tapSeconds -= Time.deltaTime;
+		if(baseRef.tapSeconds > Time.deltaTime)
+			baseRef.tapSeconds -= Time.deltaTime;
 
 
         int hours = (int)Mathf.Floor(baseRef.tapSeconds / 3600.0f);

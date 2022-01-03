@@ -57,6 +57,8 @@ public class InputManager : MonoBehaviour
 
         Quaternion toRotation = Quaternion.Euler(rotationXAxis, rotationYAxis, 0);
         rotation = toRotation;
+
+        dragged = false;
     }
 
     // Update is called once per frame
@@ -162,13 +164,13 @@ public class InputManager : MonoBehaviour
 #endif
                 {
                     dragging = false;
+                    dragged = false;
                     return;
                 }
 
                 Vector2 currentPos = getInputScreenPos(0);
                 Vector2 direction = currentPos - previousPos;
 
-                
                 if (direction.magnitude > 0.1f)
 				{
                     dragged = true;

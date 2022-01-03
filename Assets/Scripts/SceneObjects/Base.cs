@@ -47,7 +47,7 @@ public class Base : MonoBehaviour
 	[NonSerialized]
 	public string baseTypeString;
 
-	public int baseTier;
+	public int baseType;
 
 	// for tap mechanic to boost agents
 	[NonSerialized]
@@ -85,7 +85,7 @@ public class Base : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-		heldResources = new Value[baseTier + 1];
+		heldResources = new Value[baseType + 1];
 
 		for(int i = 0; i < heldResources.Length; i++)
 		{
@@ -93,7 +93,7 @@ public class Base : MonoBehaviour
 		}
 
 		for (int i = 0; i < agents.Count; i++)
-			agents[i].maxAcquirableResourceTier = baseTier;
+			agents[i].maxAcquirableResourceTier = baseType;
 
 		baseTypeString = gameObject.name.Contains("Clone") ? gameObject.name.Substring(5, gameObject.name.Length - 5 - 7) : gameObject.name.Substring(5);
         GameObject agentPrefab = (GameObject)Resources.Load("Agent_" + baseTypeString, typeof(GameObject));

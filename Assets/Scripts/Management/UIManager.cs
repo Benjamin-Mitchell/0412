@@ -296,7 +296,7 @@ public class UIManager : MonoBehaviour
 		baseUI.SetActive(true);
 		for(int i = 0; i < valueImages.Length; i++)
 		{
-			if (i <= baseRef.baseTier)
+			if (i <= baseRef.baseType)
 				valueImages[i].gameObject.SetActive(true);
 			else
 				valueImages[i].gameObject.SetActive(false);

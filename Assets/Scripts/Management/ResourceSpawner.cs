@@ -61,15 +61,15 @@ public class ResourceSpawner : MonoBehaviour
 
 	public void CalculateSpawnRates(int maxBaseTier)
 	{
-		if (maxBaseTier == 1)
+		if (maxBaseTier == 0)
 			resourceSpawnRates = new float[1] { 1.0f };
-		else if (maxBaseTier == 2)
+		else if (maxBaseTier == 1)
 			resourceSpawnRates = new float[2] { 0.6f, 0.4f };
-		else if (maxBaseTier == 3)
+		else if (maxBaseTier == 2)
 			resourceSpawnRates = new float[3] { 0.5f, 0.3f, 0.2f};
-		else if (maxBaseTier == 4)
+		else if (maxBaseTier == 3)
 			resourceSpawnRates = new float[4] { 0.4f, 0.3f, 0.2f, 0.1f };
-		else if (maxBaseTier == 5)
+		else if (maxBaseTier == 4)
 			resourceSpawnRates = new float[5] { 0.3f, 0.25f, 0.2f, 0.15f, 0.1f };
 	}
 

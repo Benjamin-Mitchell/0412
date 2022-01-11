@@ -297,7 +297,7 @@ public class BuildManager : MonoBehaviour
 
 		building = true;
 
-
+        inputManager.SetZoomMax();
 		//Reset input to prevent current mouse down from triggering next build stage. 
 		Input.ResetInputAxes();
     }
@@ -314,6 +314,8 @@ public class BuildManager : MonoBehaviour
 
 		pickedBuildTarget = false;
 		beingBuilt = null;
+
+        inputManager.SetZoomBack();
     }
 
     void FinishBuild()
@@ -361,7 +363,9 @@ public class BuildManager : MonoBehaviour
         pickedBuildTarget = false;
 
 		beingBuilt = null;
-	}
+
+        inputManager.SetZoomBack();
+    }
 
 	//TODO: Update with new types when they are ready.
 	string[] types = new string[5] { "Dirty", "Pie", "Seller", "Proxy", "Teabag" };

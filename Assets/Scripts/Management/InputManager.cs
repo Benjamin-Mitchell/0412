@@ -21,7 +21,7 @@ public class InputManager : MonoBehaviour
     private Vector2 previousPos;
     private Vector3 camLookAt;
     //
-    float distance,  prevDistance;
+    float distance,  prevDistance, preBuildDistance;
     float minDistance = 5.0f;
     float maxDistance = 25.0f;
     float rotationYAxis = 0.0f;
@@ -211,8 +211,9 @@ public class InputManager : MonoBehaviour
 			if(targetMoves)
 			{
 				camLookAt = traversalMovingTarget.transform.position;
-				CalcTraversalTarget();
 			}
+
+            CalcTraversalTarget();
 
             float step = traversalSpeed * Time.deltaTime;
             float angularStep = traversalAngularSpeed * Time.deltaTime;
@@ -240,8 +241,38 @@ public class InputManager : MonoBehaviour
         }
 	}
 
+
+    public void SetZoomBack()
+	{
+        StartCoroutine(InterpolateZoom(preBuildDistance));
+    }
+
+    public void SetZoomMax()
+    {
+        preBuildDistance = distance;
+        StartCoroutine(InterpolateZoom(maxDistance));
+
+    }
+
+    private IEnumerator InterpolateZoom(float targetDist)
+	{
+        float elapsedTime = 0.0f;
+
+        while (elapsedTime < traversalDuration)
+		{
+            distance = Mathf.Lerp(distance, targetDist, elapsedTime / traversalDuration);
+            Debug.Log("test distance: " + distance);
+            elapsedTime += Time.deltaTime;
+            yield return null;
+		}
+
+        distance = targetDist;
+        yield return null;
+	}
+
 	public void MoveCamTo(Base b)
 	{
+        //make this attached to a UI button in scene.
 		if (_UIManager)
 			_UIManager.EnableUI(b);
 
@@ -254,8 +285,9 @@ public class InputManager : MonoBehaviour
 	}
 
 	public void MoveCamTo(AgentStats stats)
-	{
-		if (_UIManager)
+    {
+        //make this attached to a UI button in scene.
+        if (_UIManager)
 			_UIManager.EnableUI(stats);
 
 		traversing = true;

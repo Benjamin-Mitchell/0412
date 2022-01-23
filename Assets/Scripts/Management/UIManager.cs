@@ -103,7 +103,7 @@ public class UIManager : MonoBehaviour
 	private GameManager gameManager;
 
 	public enum UIACTIVE {Base, Agent, none};
-	UIACTIVE active;
+	UIACTIVE active = UIACTIVE.none;
 	public UIACTIVE targeted = UIACTIVE.none;
 
     // Start is called before the first frame update

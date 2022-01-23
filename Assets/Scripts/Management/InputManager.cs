@@ -272,10 +272,8 @@ public class InputManager : MonoBehaviour
 
 	public void MoveCamTo(Base b)
 	{
-        //make this attached to a UI button in scene.
-		if (_UIManager)
-			_UIManager.EnableUI(b);
-
+        _UIManager.targeted = UIManager.UIACTIVE.Base;
+        _UIManager.baseRef = b;
 		traversing = true;
 		targetMoves = false;
 		camLookAt = b.gameObject.transform.position;
@@ -286,11 +284,10 @@ public class InputManager : MonoBehaviour
 
 	public void MoveCamTo(AgentStats stats)
     {
-        //make this attached to a UI button in scene.
-        if (_UIManager)
-			_UIManager.EnableUI(stats);
 
-		traversing = true;
+        _UIManager.targeted = UIManager.UIACTIVE.Agent;
+        _UIManager.agentRef = stats;
+        traversing = true;
 		targetMoves = true;
 		camLookAt = stats.gameObject.transform.position;
 		traversalMovingTarget = stats.gameObject;

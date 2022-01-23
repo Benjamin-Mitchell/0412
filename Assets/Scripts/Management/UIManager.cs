@@ -72,6 +72,9 @@ public class UIManager : MonoBehaviour
 	GameObject dollarUI;
 
 	[SerializeField]
+	GameObject enableUIButton;
+
+	[SerializeField]
 	Text spawnRateUpgradeText, resourceValueUpgradeText, unitReturnRateUpgradeText, MaxInactiveUpgradeText;
 
 	[SerializeField]
@@ -93,14 +96,15 @@ public class UIManager : MonoBehaviour
 	//private Value baseResource = 0;
 	//private Value baseReqToUpdate = 0;
 	private bool fullyUpgraded = false;
-	private Base baseRef = null;
+	public Base baseRef = null;
 
-	private AgentStats agentRef = null;
+	public AgentStats agentRef = null;
 
 	private GameManager gameManager;
 
-	enum UIACTIVE {Base, Agent, none};
+	public enum UIACTIVE {Base, Agent, none};
 	UIACTIVE active;
+	public UIACTIVE targeted = UIACTIVE.none;
 
     // Start is called before the first frame update
     void Start()
@@ -284,6 +288,18 @@ public class UIManager : MonoBehaviour
 		}
 	}
 
+	public void EnableUI()
+	{
+		if (targeted == UIACTIVE.Base)
+			EnableUI(baseRef);
+		else if (targeted == UIACTIVE.Agent)
+			EnableUI(agentRef);
+		else if (targeted == UIACTIVE.none)
+			Debug.Log("NONE");
+
+		enableUIButton.SetActive(false);
+	}
+
 	public void EnableUI(Base b)
 	{
 		DefaultState();
@@ -317,6 +333,7 @@ public class UIManager : MonoBehaviour
 		confirmUI.SetActive(false);
 		baseUI.SetActive(false);
 		agentUI.SetActive(false);
+		enableUIButton.SetActive(true);
         fullyUpgraded = false;
     }
 

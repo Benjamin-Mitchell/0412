@@ -7,6 +7,8 @@ public class Resource : MonoBehaviour
     public Value value;
     public float moveSpeed = 0.5f;
 
+	public float initialScale = 0.0f;
+
     public int tier; //0: dirty, 1: pie, 2: proxy, 3: Seller, 4:Teabag
 
     Vector3 target;
@@ -15,8 +17,16 @@ public class Resource : MonoBehaviour
 
 	private Shake shake;
 
-    // Start is called before the first frame update
-    void Start()
+	private float finalScale = 0.0f;
+
+	// Start is called before the first frame update
+	private void Awake()
+	{
+		transform.localScale = new Vector3(initialScale, initialScale, initialScale);
+		transform.eulerAngles = new Vector3(Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f), Random.Range(0.0f, 360.0f));
+		finalScale = Random.Range(0.6f, 1.6f);
+	}
+	void Start()
     {
 		//shake = GetComponent<Shake>();
         target = new Vector3(transform.position.x, transform.position.y, -1.0f);
@@ -30,6 +40,13 @@ public class Resource : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+		if (initialScale < (finalScale))
+		{
+			initialScale += (Time.deltaTime / 5.0f);
+			transform.localScale = new Vector3(initialScale, initialScale, initialScale);
+		}
+
+
 		if(canMove)
 			transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
     }
